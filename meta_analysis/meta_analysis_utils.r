@@ -21,7 +21,7 @@ renaming_header_list <- list(
 	`MAC` = c("mac"),
 	`MAC_case` = c("mac_case"),
 	`MAC_control` = c("mac_control"), 
-	`Number_rare` = c("rare_var_count"),
+	`Number_rare` = c ("rare_var_count"),
 	`Number_ultra_rare` = c("ultrarare_var_count")
 )
 
@@ -172,7 +172,7 @@ renaming_phenotype_list <- list(
 	`Gout` = "Gout",
 	`GravesDis` = "Graves disease",
 	`HemoChromo` = "Haemochromatosis",
-	`HF` = "Heart Failure",
+	`HF` = "Heart failure",
 	`HepCarcin` = "Hepatocellular carcinoma",
 	`HTN` = "Hypertension",
 	`HHD` = "Hypertensive heart disease",
