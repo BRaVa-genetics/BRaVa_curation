@@ -194,7 +194,7 @@ parser$add_argument("--out", default="meta_analysis", required=FALSE,
 parser$add_argument("--no_sex_check", default=FALSE, action='store_true',
     help="Perform sex check of samples used for the trait when running meta-analysis?")
 parser$add_argument("--Neff_weights_file",
-    default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights.tsv.gz",
+    default="/well/lindgren/dpalmer/BRaVa_curation/data/meta-analysis/gcloud/Neff_weights.tsv.gz",
     help="File to pass effective sample sizes")
 args <- parser$parse_args()
 
