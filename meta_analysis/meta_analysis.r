@@ -64,6 +64,10 @@ main <- function(args)
         dt_list[[file]] <- dt_tmp %>% filter(Group != "Cauchy")
     }
 
+    print(dt_list)
+    for (i in 1:length(dt_list)) {
+        print(names(dt_list[[i]]))
+    }
     dt <- rbindlist(dt_list, use.names=TRUE)
     dt <- dt %>% filter((!is.na(Pvalue)) & (!is.na(Pvalue_SKAT)) & (!is.na(Pvalue_Burden)))
 
