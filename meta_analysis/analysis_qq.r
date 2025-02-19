@@ -14,10 +14,11 @@ source("meta_analysis_utils.r")
 
 main <- function(args)
 {
+    print(args)
     ribbon_p <- 0.95
 
     if (!is.null(args$analysis_results_folder)) {
-        files <- dir(args$meta_analysis_results_folder,
+        files <- dir(args$analysis_results_folder,
             pattern=args$analysis_results_path_regexp,
             full.names=TRUE)
     } else if (!is.null(args$analysis_results_file)) {
@@ -47,6 +48,7 @@ main <- function(args)
 
     pdf(file=args$out, width=6, height=4)
     for (file in files) {
+        cat(paste0(file, "\n"))
         file_info <- extract_file_info(gsub(".*/(.*)", "\\1", file))
         phe_plot <- gsub("_", " ", gsub("_$", "", str_trim(gsub("[[:space:]_]+", "\\_", file_info$phenotype))))
         phe_plot <- paste(file_info$dataset, file_info$ancestry, phe_plot, sep=", ")
