@@ -55,7 +55,7 @@ main <- function(args)
 					if (length(unique(sexes)) == length(sexes)) {
 						# output file
 						out <- paste0(out_plot_dir, "/", dataset, "_", phe, "_",
-							sexes, "_", anc, "_gene_meta_analysis_qq.pdf")
+							sexes, "_", anc, "_gene_qq.pdf")
 						for (i in 1:length(file_gene)) {
 							cat(paste0("using file: ", file_gene[i], "\n"))
 							cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh",
