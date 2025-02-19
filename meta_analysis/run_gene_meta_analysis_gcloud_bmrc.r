@@ -75,9 +75,7 @@ main <- function(args)
 				files_gene, out))
 			cat(paste0("submitted meta-analysis of ", phe, " completed\n\n"))
 		}
-		break
 	}
-	break
 
 	# We also want to run superpopulation specific meta-analysis, non-EUR,
 	# and leave-one-biobank-out meta-analysis as well (though let's leave that last one for the time being)
@@ -119,7 +117,6 @@ main <- function(args)
 				cat(paste0("submitted meta-analysis of ", phe, ":", p, " completed\n\n"))
 			}
 		}
-		break
 	}
 
 	# And finally, for non-EUR
@@ -157,7 +154,6 @@ main <- function(args)
 				files_gene_tmp, out))
 			cat(paste0("submitted meta-analysis of ", phe, ":non_EUR completed\n\n"))
 		}
-		break
 	}
 }
 
