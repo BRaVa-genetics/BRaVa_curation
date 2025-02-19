@@ -61,8 +61,9 @@ main <- function(args)
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
 			if (length(files_gene) <= 1) { 
-				cat("Either the phenotype is not present, or there is only a single file\n")
-				next 
+				cat("Either the phenotype is not present, or there is only a single file for:\n")
+				cat(phe, " ", s, "\n")
+				next  
 			}
 			files_gene <- paste(files_gene, collapse=",")
 			out <- paste0(out_meta_results_dir, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.tsv.gz")
@@ -85,7 +86,8 @@ main <- function(args)
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
 			if (length(files_gene) <= 1) { 
-				cat("Either the phenotype is not present, or there is only a single file\n")
+				cat("Either the phenotype is not present, or there is only a single file for:\n")
+				cat(phe, " ", s, "\n")
 				next 
 			}
 			files_info <- lapply(files_gene, extract_file_info)
@@ -99,7 +101,8 @@ main <- function(args)
 			for (p in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
 				files_gene_tmp <- (to_subset %>% filter(pop == !!p))$filename
 				if (length(files_gene_tmp) <= 1) { 
-					cat("Either the phenotype is not present, or there is only a single file\n")
+					cat("Either the phenotype is not present, or there is only a single file for:\n")
+					cat(phe, " ", s, " ", p, "\n")
 					next 
 				}
 				files_gene_tmp <- paste(files_gene_tmp, collapse=",")
@@ -123,7 +126,8 @@ main <- function(args)
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
 			if (length(files_gene) <= 1) { 
-				cat("Either the phenotype is not present, or there is only a single file\n")
+				cat("Either the phenotype is not present, or there is only a single file for:\n")
+				cat(phe, " ", s, " non-EUR\n")
 				next 
 			}
 			files_info <- lapply(files_gene, extract_file_info)
@@ -136,14 +140,15 @@ main <- function(args)
 			
 			files_gene_tmp <- (to_subset %>% filter(pop != "EUR"))$filename
 			if (length(files_gene_tmp) <= 1) { 
-				cat("Either the phenotype is not present, or there is only a single file\n")
+				cat("Either the phenotype is not present, or there is only a single file for:\n")
+				cat(phe, " ", s, " non-EUR\n")
 				next 
 			}
 			files_gene_tmp <- paste(files_gene_tmp, collapse=",")
 			# Ensure the folder is present
 			system(paste0("mkdir -p ", out_meta_results_dir, "/non_EUR"))
 			out <- paste0(out_meta_results_dir, "/non_EUR/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.non_EUR.tsv.gz")
-			cat(paste0("carrying out meta-analysis of ", phe, " in ", s, "\n"))
+			cat(paste0("carrying out meta-analysis of ", phe, " in ", s, " for non-EUR\n"))
 			cat(paste0("\nFiles in the analysis: ",
 				paste0(strsplit(files_gene_tmp, split=",")[[1]], collapse='\n'), "\n"))
 			system(paste(
