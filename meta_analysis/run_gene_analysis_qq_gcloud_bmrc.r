@@ -59,7 +59,7 @@ main <- function(args)
 						for (i in 1:length(file_gene)) {
 							cat(paste0("using file: ", file_gene[i], "\n"))
 							cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh",
-								file_genep[i], out[i])
+								file_gene[i], out[i])
 							system(cmd)
 							cat(paste0(cmd, "\n"))
 							cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
