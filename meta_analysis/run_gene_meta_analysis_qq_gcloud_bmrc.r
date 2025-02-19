@@ -37,12 +37,17 @@ main <- function(args)
 		if (any(grepl("extra_cauchy", file_gene))) {
 			file_gene <- file_gene[-grep("extra_cauchy", file_gene)]
 		}
-		out <- paste0(out_plot_dir, "/", phe, "_gene_meta_analysis_qq.pdf")
-		cat(paste0("carrying out plotting of gene QQ for ", phe, "\n"))
-		cat(paste0("using file: ", file_gene, "\n"))
-		system(paste(
-			"sbatch run_meta_analysis_qq_gcloud_bmrc.sh",
-			file_gene, out))
+		for (s in c("ALL", "M", "F")) {
+			if (sum(grepl(paste0("_", s, "_"), file_gene)) == 1) {
+				out <- paste0(out_plot_dir, "/", phe, "_", s, "_gene_meta_analysis_qq.pdf")
+				file_gene_tmp <- file_gene[which(grepl(paste0("_", s, "_"), file_gene))]
+				cat(paste0("carrying out plotting of gene QQ for ", phe, " in ", s, "\n"))
+				cat(paste0("using file: ", file_gene_tmp, "\n"))
+				system(paste(
+					"sbatch run_meta_analysis_qq_gcloud_bmrc.sh",
+					file_gene_tmp, out))
+			}
+		}
 		cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
 	}
 }
