@@ -60,7 +60,7 @@ main <- function(args)
 	for (phe in phes) {
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
-			if (length(file_gene) <= 1) { 
+			if (length(files_gene) <= 1) { 
 				cat("Either the phenotype is not present, or there is only a single file\n")
 				next 
 			}
@@ -84,7 +84,7 @@ main <- function(args)
 	for (phe in phes) {
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
-			if (length(file_gene) <= 1) { 
+			if (length(files_gene) <= 1) { 
 				cat("Either the phenotype is not present, or there is only a single file\n")
 				next 
 			}
@@ -122,7 +122,7 @@ main <- function(args)
 	for (phe in phes) {
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
-			if (length(file_gene) <= 1) { 
+			if (length(files_gene) <= 1) { 
 				cat("Either the phenotype is not present, or there is only a single file\n")
 				next 
 			}
