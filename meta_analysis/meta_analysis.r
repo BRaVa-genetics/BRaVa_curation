@@ -57,8 +57,6 @@ main <- function(args)
         dt_list[[file]]$dataset <- file_info$dataset
         dt_list[[file]]$ancestry <- file_info$ancestry
 
-        print(names(dt_list[[file]]))
-
         # Compare N to actual N and throw an error if it doesn't match
         dt_tmp <- add_N_using_filename(file_info, dt_list[[file]])
         dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
@@ -66,12 +64,6 @@ main <- function(args)
         dt_list[[file]] <- dt_tmp %>% filter(Group != "Cauchy")
     }
 
-    print(dt_list)
-    for (i in 1:length(dt_list)) {
-        print(names(dt_list)[i])
-        print(names(dt_list[[i]]))
-        print(length(names(dt_list[[i]])))
-    }
     dt <- rbindlist(dt_list, use.names=TRUE, fill=TRUE)
     dt <- dt %>% filter((!is.na(Pvalue)) & (!is.na(Pvalue_SKAT)) & (!is.na(Pvalue_Burden)))
 

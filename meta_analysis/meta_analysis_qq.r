@@ -75,7 +75,8 @@ main <- function(args)
         )
 
         if (args$burden_only_plot) {
-            dt_meta_to_plot <- dt_meta_to_plot %>% mutate(OR = exp(BETA_Burden))
+            dt_meta_to_plot <- dt_meta_to_plot %>% mutate(OR = ifelse(SE_Burden == Inf, 1, exp(BETA_Burden)))
+            # Edge cases where the OR is NA, are for P-values of 1, and so have undefined OR.
             dt_meta_to_plot$color <- cut(dt_meta_to_plot$OR,
                 breaks = c(-Inf, 0.95, 1, 1.05, Inf),
                 labels = c("< 0.95", "[0.95, 1)", "[1, 1.05]", "> 1.05"))
