@@ -72,7 +72,7 @@ main <- function(args)
         print(names(dt_list[[i]]))
         print(length(names(dt_list[[i]])))
     }
-    dt <- rbindlist(dt_list, use.names=TRUE)
+    dt <- rbindlist(dt_list, use.names=TRUE, fill=TRUE)
     dt <- dt %>% filter((!is.na(Pvalue)) & (!is.na(Pvalue_SKAT)) & (!is.na(Pvalue_Burden)))
 
     # Nudge P-values that are close to exactly 1 (for Stouffer).
