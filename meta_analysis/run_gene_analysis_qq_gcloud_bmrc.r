@@ -55,7 +55,7 @@ main <- function(args)
 					if (length(unique(sexes)) == length(sexes)) {
 						# output file
 						out <- paste0(out_plot_dir, "/", dataset, "_", phe, "_",
-							sex, "_", anc, "_gene_meta_analysis_qq.pdf")
+							sexes, "_", anc, "_gene_meta_analysis_qq.pdf")
 						for (i in 1:length(file_gene)) {
 							cat(paste0("using file: ", file_gene[i], "\n"))
 							cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh",
@@ -65,12 +65,17 @@ main <- function(args)
 							cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
 						}
 					} else {
-						cat("There are multiple files for one of the sexes for (",
-							phe, ", ", dataset, ", ", anc, ")\n")
+						cat(paste0("There are multiple files for one of the sexes for (",
+							phe, ", ", dataset, ", ", anc, ")\n"))
 					}
 				} else {
-					cat("There are more than 3 unique files for (",
-							phe, ", ", dataset, ", ", anc, ")\n")
+					if (length(file_gene) == 0) {
+						cat(paste0("This phenotype is not available for (",
+							phe, ", ", dataset, ", ", anc, ")\n"))
+					} else {
+						cat(paste0("There are more than 3 unique files for (",
+							phe, ", ", dataset, ", ", anc, ")\n"))
+					}
 				}
 			}
 		}
