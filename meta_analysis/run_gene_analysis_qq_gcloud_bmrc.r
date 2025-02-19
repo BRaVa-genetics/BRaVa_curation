@@ -67,6 +67,7 @@ main <- function(args)
 					} else {
 						cat(paste0("There are multiple files for one of the sexes for (",
 							phe, ", ", dataset, ", ", anc, ")\n"))
+						print(file_gene)
 					}
 				} else {
 					if (length(file_gene) == 0) {
