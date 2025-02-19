@@ -77,6 +77,7 @@ main <- function(args)
 		}
 		break
 	}
+	break
 
 	# We also want to run superpopulation specific meta-analysis, non-EUR,
 	# and leave-one-biobank-out meta-analysis as well (though let's leave that last one for the time being)
