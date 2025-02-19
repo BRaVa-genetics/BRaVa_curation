@@ -93,7 +93,7 @@ main <- function(args)
 				filename = files_gene,
 				phenotypeID = sapply(files_info, `[[`, "phenotype"),
 				pop = sapply(files_info, `[[`, "ancestry"),
-				sex = sapply(results, `[[`, "sex")
+				sex = sapply(files_info, `[[`, "sex")
 			)
 
 			for (p in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
@@ -131,7 +131,7 @@ main <- function(args)
 				filename = files_gene,
 				phenotypeID = sapply(files_info, `[[`, "phenotype"),
 				pop = sapply(files_info, `[[`, "ancestry"),
-				sex = sapply(results, `[[`, "sex")
+				sex = sapply(files_info, `[[`, "sex")
 			)
 			
 			files_gene_tmp <- (to_subset %>% filter(pop != "EUR"))$filename
@@ -151,8 +151,8 @@ main <- function(args)
 				files_gene_tmp, out))
 			cat(paste0("submitted meta-analysis of ", phe, ":non_EUR completed\n\n"))
 		}
+		break
 	}
-	break
 }
 
 # Add arguments
