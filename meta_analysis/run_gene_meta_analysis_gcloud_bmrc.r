@@ -119,7 +119,7 @@ main <- function(args)
 		}
 	}
 
-	# And finally, for non-EUR
+	# for non-EUR
 	for (phe in phes) {
 		for (s in c("ALL", "M", "F")) {
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
@@ -153,6 +153,33 @@ main <- function(args)
 				"sbatch run_meta_analysis_gcloud_bmrc.sh",
 				files_gene_tmp, out))
 			cat(paste0("submitted meta-analysis of ", phe, ":non_EUR completed\n\n"))
+		}
+	}
+
+	# And now, do a leave one biobank out meta-analysis.
+	# Here, we restrict 'leave one out' biobanks to those containing the biobank in the original analysis
+	for (b in unique(results_dt$biobank)) {
+		results_dt_tmp <- results_dt %>% filter(biobank != b)
+		for (phe in phes) {
+			for (s in c("ALL", "M", "F")) {
+				files_gene <- (results_dt_tmp %>% filter(phenotypeID == phe, sex == s))$filename
+				if (length(files_gene) <= 1) { 
+					cat("Either the phenotype is not present, or there is only a single file for:\n")
+					cat(phe, s, "for all biobanks except", b, "\n")
+					next 
+				}
+				files_gene <- paste(files_gene, collapse=",")
+				# Ensure the folder is present
+				system(paste0("mkdir -p ", out_meta_results_dir, "/minus_", b))
+				out <- paste0(out_meta_results_dir, "/minus_", b, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.minus_", b, ".tsv.gz")
+				cat(paste0("carrying out meta-analysis of ", phe, " in ", s, " for all biobanks except ", b, "\n"))
+				cat(paste0("\nFiles in the analysis: ",
+					paste0(strsplit(files_gene, split=",")[[1]], collapse='\n'), "\n"))
+				system(paste(
+					"sbatch run_meta_analysis_gcloud_bmrc.sh",
+					files_gene, out))
+				cat(paste0("submitted meta-analysis of ", phe, ":minus", b, " completed\n\n"))
+			}
 		}
 	}
 }
