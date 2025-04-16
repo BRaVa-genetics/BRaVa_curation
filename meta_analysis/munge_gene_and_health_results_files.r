@@ -29,18 +29,19 @@ rename_files <- function(results_type="gene")
 
 if (download) {
 	system(paste0(
-		"gsutil cp gs://brava-meta-upload-", biobank, "/*.gene.* ",
+		"gsutil -m cp gs://brava-meta-upload-", biobank, "/*.gene.* ",
 		data_dir, "/gene/")
 	)
+	system(paste0("rm ", data_dir, "/gene/PRELIMINARY_DATA_NOT_FINAL_GNH_SUBMISSION_GnH.Hodgson.PRELIMINARY.Coronary_artery_disease.JULY23Freeze.ALL.SAS.1139.24668.SAIGE.gene.20231205.txt.gz"))
 	rename_files()
 	
-	system(paste0(
-		"gsutil cp gs://brava-meta-upload-", biobank, "/*.variant.* ",
-		data_dir, "/variant/")
-	)
-	rename_files(results_type="variant")
+	# system(paste0(
+	# 	"gsutil -m cp gs://brava-meta-upload-", biobank, "/*.variant.* ",
+	# 	data_dir, "/variant/")
+	# )
+	# rename_files(results_type="variant")
 }
-
+system(paste0("rm ", data_dir, "/gene/PRELIMINARY_DATA_NOT_FINAL_GNH_SUBMISSION_GnH.Hodgson.PRELIMINARY.Coronary_artery_disease.JULY23Freeze.ALL.SAS.1139.24668.SAIGE.gene.20231205.txt.gz"))
 system(paste0("Rscript munge_results_files_Group_names.r",
 	" --folder ", data_dir, "/gene",
 	" --type ", "gene",
@@ -48,9 +49,9 @@ system(paste0("Rscript munge_results_files_Group_names.r",
 	" --out_folder ", out_data_dir, "/gene")
 )
 
-system(paste0("Rscript munge_results_files_Group_names.r",
-	" --folder ", data_dir, "/variant",
-	" --type ", "variant",
-	" --write",
-	" --out_folder ", out_data_dir, "/variant")
-)
+# system(paste0("Rscript munge_results_files_Group_names.r",
+# 	" --folder ", data_dir, "/variant",
+# 	" --type ", "variant",
+# 	" --write",
+# 	" --out_folder ", out_data_dir, "/variant")
+# )
