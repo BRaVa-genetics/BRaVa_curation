@@ -178,7 +178,7 @@ main <- function(args)
 				system(paste(
 					"sbatch run_meta_analysis_gcloud_bmrc.sh",
 					files_gene, out))
-				cat(paste0("submitted meta-analysis of ", phe, ":minus", b, " completed\n\n"))
+				cat(paste0("submitted meta-analysis of ", phe, ":minus ", b, " completed\n\n"))
 			}
 		}
 	}

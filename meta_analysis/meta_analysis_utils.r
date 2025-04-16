@@ -52,6 +52,42 @@ renaming_variant_header_list <- list(
 	`N` = c("n")
 )
 
+# Change the above to restrict to the set that best represents the trait of interest
+aou_curated <- list(
+	AMD = "SO_374.51",
+	Asth = "RE_475",
+	AFib = "CV_416.21",
+	BenCervUterNeo = "218",
+	BenIntNeo = "208",
+	BreastCanc = "174",
+	CervCanc = "180.1",
+	COPD = "RE_474",
+	CRF = "585.3",
+	ColonRectCanc = "CA_101.41",
+	CAD = "CV_404.11",
+	EFRMB = "GU_626.1",
+	FemInf = "GU_629",
+	Gout = "MS_703.1",
+	HF = "CV_424",
+	HTN = "CV_401",
+	IBD = "GI_522.1",
+	IFHern = "GI_520.11",
+	ILDSarc = "RE_481",
+	MatHem = "PP_904.1",
+	NonRheuValv = "747.12",
+	Pancreat = "GI_554.1",
+	PeptUlcer = "GI_513",
+	PAD = "CV_436",
+	Psori = "DE_664.4",
+	RheumHeaDis = "CV_400.2",
+	RheumArth = "MS_705.1",
+	Stroke = "CV_431.1",
+	T2Diab = "EM_202.2",
+	Urolith = "GU_585",
+	VaricVeins = "CV_444.1",
+	VTE = "CV_440.1"
+)
+
 # Expected annotation names
 correct_names <- c("pLoF",
 	"damaging_missense_or_protein_altering",
@@ -261,6 +297,53 @@ renaming_phenotype_list <- list(
 	`SCDCAT` = "Social and communication disorders checklist/autistic traits"
 )
 
+phenotype_broad_categories <- list(
+	AMD	= "Sense organs",
+	Asth = "Respiratory",
+	AFib = "Cardiovascular",
+	BenCervUterNeo = "Neoplasms",
+	BenIntNeo = "Neoplasms",
+	BreastCanc = "Neoplasms",
+	CervCanc = "Neoplasms",
+	COPD = "Respiratory",
+	CRF = "Genitourinary",
+	ColonRectCanc = "Neoplasms",
+	CAD = "Cardiovascular",
+	EFRMB = "Genitourinary",
+	FemInf = "Genitourinary",
+	Gout = "Muscloskeletal",
+	HF = "Cardiovascular",
+	HTN = "Cardiovascular",
+	IBD = "Gastrointestinal",
+	IFHern = "Gastrointestinal",
+	ILDSarc = "Respiratory",
+	MatHem = "Pregnancy",
+	NonRheuValv = "Cardiovascular",
+	Pancreat = "Gastrointestinal",
+	PeptUlcer = "Gastrointestinal",
+	PAD = "Cardiovascular",
+	Psori = "Dermatological",
+	RheumHeaDis = "Cardiovascular",
+	RheumArth = "Muscloskeletal",
+	Stroke = "Cardiovascular",
+	T2Diab = "Endocrine/Metabolic",
+	Urolith = "Genitourinary",
+	VaricVeins = "Cardiovascular",
+	VTE = "Cardiovascular",
+	ALT = "Gastrointestinal",
+	AlcCons = "Endocrine/Metabolic",
+	AST = "Gastrointestinal",
+	BMI = "Endocrine/Metabolic",
+	CRP = "Cardiovascular",
+	HDLC = "Cardiovascular",
+	Height = "Muscloskeletal",
+	LDLC = "Cardiovascular",
+	TChol = "Cardiovascular",
+	TG = "Cardiovascular",
+	WHRBMI = "Endocrine/Metabolic",
+	HipRep = "Muscloskeletal"
+)
+
 file_check_information <- list(
 	dataset = list(
 		`all-of-us` = c("all-of-us", "All-of-Us", "All-of-us"),
@@ -272,7 +355,7 @@ file_check_information <- list(
 		`decode` = c("decode", "DECODE"),
 		`egcut` = c("egcut", "EGCUT"),
 		`dan-rav` = c("dan-rav", "Dan-RaV"),
-		`genes-and-health` = c("genes-and-health", "GnH", "Genes-and-Health"),
+		`genes-and-health` = c("genes-and-health", "GnH", "Genes-and-Health", "GNH"),
 		`gel` = c("gel", "GEL"),
 		`mgbb` = c("mgbb", "MGBB"),
 		`pmbb` = c("pmbb", "PMBB"),

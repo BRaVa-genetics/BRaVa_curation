@@ -6,7 +6,10 @@ library(tidyr)
 library(latex2exp)
 
 # Loop over the data files that contain the case and control counts
-files <- dir(path="../data/meta_analysis/gcloud", full.names=TRUE, recursive=TRUE)
+# # Local
+# files <- dir(path="../data/meta_analysis/gcloud", full.names=TRUE, recursive=TRUE)
+files <- dir(path="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs", full.names=TRUE, recursive=TRUE)
+
 files <- gsub("^.*/", "", grep("cleaned", files, value=TRUE))
 source("meta_analysis_utils.r")
 
