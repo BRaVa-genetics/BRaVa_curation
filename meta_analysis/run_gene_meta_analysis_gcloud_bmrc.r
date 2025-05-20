@@ -50,8 +50,8 @@ main <- function(args)
 			"PeptUlcer", "PAD", "Psori", "RheumHeaDis", "RheumArth",
 			"Stroke", "T2Diab", "Urolith", "VaricVeins", "VTE", "ALT",
 			"AlcCons", "AST", "BMI", "HDLC", "Height", "LDLC",
-			"TChol", "TG", "WHRBMI", "HipRep"
-		) # CRP?
+			"TChol", "TG", "WHRBMI", "HipRep", "CRP"
+		)
 	} else {
 		phes <- phe
 	}
