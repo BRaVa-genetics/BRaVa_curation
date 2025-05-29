@@ -24,7 +24,7 @@ main <- function(args)
 	# collection of (population, phenotype) pairs for that biobank to include in the meta-analysis
 
 	biobanks <- dir(data_dir)[file.info(dir(data_dir, full.names=TRUE))$isdir]
-	biobanks <- setdiff(biobanks, names(file_check_information$dataset))
+	biobanks <- intersect(biobanks, names(file_check_information$dataset))
 	results_dt_list <- list()
 
 	for (biobank in biobanks)
