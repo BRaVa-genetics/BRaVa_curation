@@ -353,7 +353,7 @@ file_check_information <- list(
 		`ckb` = c("ckb", "CKB"),
 		`ccpm` = c("ccpm", "CCPM"),
 		`decode` = c("decode", "DECODE"),
-		`egcut` = c("egcut", "EGCUT"),
+		`egcut` = c("egcut", "EGCUT", "EstBB", "estbb", "ESTBB"),
 		`dan-rav` = c("dan-rav", "Dan-RaV"),
 		`genes-and-health` = c("genes-and-health", "GnH", "Genes-and-Health", "GNH"),
 		`gel` = c("gel", "GEL"),
