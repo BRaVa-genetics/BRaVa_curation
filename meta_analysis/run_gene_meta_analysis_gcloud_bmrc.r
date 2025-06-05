@@ -65,17 +65,20 @@ main <- function(args)
 		filter(max_MAF != 0.01,
 			lambda_value > 1.3,
 			!(lambda_type %in% c("lambda_50_Burden", "lambda_50_SKAT", "lambda_50"))) %>% 
-		select(phenotype, dataset, ancestry))
+		select(phenotype, dataset, ancestry, sex))
 	# Manual curation, adding the following (biobank, trait) tuples containing spurious 
 	# associations
 	dt_inflation <- rbind(dt_inflation, data.table(
 		phenotype = c("ColonRectCanc", "Height"),
 		dataset = c("egcut", "mgbb"),
-		ancestry = c("EUR", "AMR")))
+		ancestry = c("EUR", "AMR"),
+		sex = c("ALL", "ALL"))
+	) %>% rename(phenotypeID = phenotype, biobank = dataset, pop = ancestry)
 
 	# Remove those (phenotype, biobank, sex) files from the meta-analysis
-	results_dt <- paste(files_gene, collapse=",")
-	# Print the names of the files that will not be included
+	setkeyv(dt_inflation, c("phenotypeID", "biobank", "pop", "sex"))
+	setkeyv(results_dt,  c("phenotypeID", "biobank", "pop", "sex"))
+	results_dt <- setdiff(results_dt, merge(dt_inflation, results_dt))
 
 	# Everything
 	for (phe in phes) {
