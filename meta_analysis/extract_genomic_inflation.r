@@ -3,8 +3,8 @@ library(data.table)
 library(dplyr)
 library(argparse)
 
-source("~/Repositories/BRaVa_curation/phenotypes/BRaVa_phenotypes_utils.r")
-pilot_phenotypes <- extract_BRaVa_pilot_phenotypes()
+source("../phenotypes/BRaVa_phenotypes_utils.r")
+# pilot_phenotypes <- extract_BRaVa_pilot_phenotypes()
 
 main <- function(args)
 {
