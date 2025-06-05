@@ -46,7 +46,8 @@ main <- function(args)
         }
     }
 
-    pdf(file=args$out, width=6, height=4)
+    
+    plots <- list()
     for (file in files) {
         cat(paste0(file, "\n"))
         file_info <- extract_file_info(gsub(".*/(.*)", "\\1", file))
@@ -65,13 +66,13 @@ main <- function(args)
         if (args$burden_only_plot) {
             dt <- dt %>% select(-c("Pvalue", "Pvalue_SKAT")) %>% 
                 rename(Pvalue = Pvalue_Burden) %>%
-                mutate(Pvalue = ifelse(Pvalue == 0, 320, -log10(Pvalue)), class = "Burden") %>% 
+                mutate(Pvalue = ifelse(Pvalue < 1e-300, 300, -log10(Pvalue)), class = "Burden") %>% 
                 select(Region, Group, max_MAF, Pvalue, BETA_Burden, SE_Burden, class)
         } else {
             dt <- melt(dt, id.vars = c("Region", "Group", "max_MAF"),
                     measure.vars = c("Pvalue", "Pvalue_Burden", "Pvalue_SKAT"),
                     value.name = "Pvalue", variable.name = "class") %>% 
-            mutate(Pvalue = ifelse(Pvalue == 0, 320, -log10(Pvalue)))
+            mutate(Pvalue = ifelse(Pvalue < 1e-300, 300, -log10(Pvalue)))
         }
         dt <- data.table(dt)
         setkey(dt, "Region")
@@ -118,10 +119,7 @@ main <- function(args)
         groups <- setdiff(unique(dt_to_plot$Group), "Cauchy")
         for (m in max_MAF_groups) {
             for (g in groups) {
-                # max_MAF_plot <- ifelse(
-                #     grepl("e", as.character(m)),
-                #     gsub("([0-9\\.]+)e(-)*0*([1-9][0-9]*)", "$\\1\\\\times 10^{\\2\\3}$", as.character(m)),
-                #     paste0("$", as.character(m), "$"))
+
                 max_MAF_plot <- as.character(m)
                 variant_class_plot <- gsub("_", " ", gsub("[\\|;]", ",\n", g))
                 cex_labels <- 2
@@ -149,7 +147,7 @@ main <- function(args)
                             color = 'grey30', segment.color = 'grey50',
                             size=cex_labels, segment.size=0.1, show.legend = FALSE)
                     }
-                    print(p)
+                    plots[[paste(file_info$phenotype, file_info$dataset, file_info$ancestry, m, g, sep="_")]] <- p
 
                 } else {
                     p <- create_pretty_qq_plot(
@@ -186,7 +184,7 @@ main <- function(args)
                             color = 'grey30', segment.color = 'grey50',
                             size=cex_labels, segment.size=0.1, show.legend = FALSE)
                     }
-                    print(p)
+                    plots[[paste(file_info$phenotype, file_info$dataset, file_info$ancestry, m, g, sep="_")]] <- p
                 }
             }
         }
@@ -211,9 +209,17 @@ main <- function(args)
                 color = 'grey30', segment.color = 'grey50',
                 size=cex_labels, segment.size=0.1, show.legend = FALSE)
         }
-        print(p)
+        plots[[paste(file_info$phenotype, file_info$dataset, file_info$ancestry, "cauchy", sep="_")]] <- p
     }
+
+    pdf(file=args$out, width=6, height=4)
+    lapply(plots, print)
     dev.off()
+    
+    to_plots_syn <- grep("0.001_synonymous", names(plots))
+    for (i in 1:length(to_plots_syn)) {
+        ggsave(paste0(dirname(args$out), "/", names(plots)[to_plots_syn[i]], ".png"), plot = plots[[to_plots_syn[i]]], width = 6, height = 4, dpi = 200)
+    }
 }
 
 # Add arguments
