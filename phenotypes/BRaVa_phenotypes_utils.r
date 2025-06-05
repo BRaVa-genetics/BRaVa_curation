@@ -7,8 +7,8 @@ library(stringr)
 extract_BRaVa_pilot_phenotypes <- function(pilot_only=TRUE) {
 	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249",
 		sheet="Sequenced_Sample_Sizes", skip=5)
-	dt_pilot <- dt
-	names(dt_pilot) <- c("phenotypeID", "include")
+	dt_pilot <- dt %>% select("Phenotype ID", "(ICD_Phecode/Procedures tab)", "...80", "...113")
+	names(dt_pilot) <- c("phenotypeID", "case_control", "count", "include")
 	dt_pilot <- dt_pilot %>% mutate(include = as.logical(include))
 	if (pilot_only) { dt_pilot <- dt_pilot %>% filter(include) }
 	dt_pilot <- dt_pilot %>% filter(phenotypeID != "")
