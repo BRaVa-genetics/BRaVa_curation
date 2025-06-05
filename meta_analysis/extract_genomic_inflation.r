@@ -4,6 +4,7 @@ library(dplyr)
 library(argparse)
 
 source("../phenotypes/BRaVa_phenotypes_utils.r")
+source("meta_analysis_utils.r")
 # pilot_phenotypes <- extract_BRaVa_pilot_phenotypes()
 
 main <- function(args)
@@ -48,6 +49,13 @@ main <- function(args)
 					cat(paste0("determining genomic control factors for ", phe, " in (", dataset, ", ", anc, ")\n"))
 					if (length(file_gene) == 1) {
 						cat(paste0("using file: ", file_gene, "\n"))
+						file_info <- extract_file_info(file_gene)
+						if ("n_cases" %in% names(file_info))  {
+							if ((file_info$n_cases < 100) | (file_info$n_controls < 100)) {
+								cat("not sufficiently many cases, next trait!")
+								next
+							}
+						}
 						chisq <- qchisq(c(0.95, 0.99, 0.999), df = 1)
 						dt_list[[i]] <- fread(file_gene) %>% group_by(max_MAF, Group) %>% summarise(
 							lambda_95_Burden = qchisq(quantile(Pvalue_Burden, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
@@ -90,6 +98,8 @@ parser$add_argument("--out",
 	required=FALSE, help="Output file path")
 parser$add_argument("--phenotypeID", required=FALSE, default=NULL,
 	help="The phenotype ID to evaluate. If null, this script determine lambdas for all traits")
+parser$add_argument("--min_cases", required=FALSE, default=100,
+	help="What is the minimum number of cases required to be included in the meta-analysis?")
 args <- parser$parse_args()
 
 main(args)
