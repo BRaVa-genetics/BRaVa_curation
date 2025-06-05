@@ -48,7 +48,7 @@ main <- function(args)
 					cat(paste0("determining genomic control factors for ", phe, " in (", dataset, ", ", anc, ")\n"))
 					if (length(file_gene) == 1) {
 						cat(paste0("using file: ", file_gene, "\n"))
-						chisq <- qchisq(c(0.5, 0.95, 0.99), df = 1)
+						chisq <- qchisq(c(0.95, 0.99, 0.999), df = 1)
 						dt_list[[i]] <- fread(file_gene) %>% group_by(max_MAF, Group) %>% summarise(
 							lambda_50_Burden = qchisq(median(Pvalue_Burden, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
 							lambda_95_Burden = qchisq(quantile(Pvalue_Burden, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
