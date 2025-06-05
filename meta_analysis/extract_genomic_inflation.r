@@ -50,15 +50,15 @@ main <- function(args)
 						cat(paste0("using file: ", file_gene, "\n"))
 						chisq <- qchisq(c(0.95, 0.99, 0.999), df = 1)
 						dt_list[[i]] <- fread(file_gene) %>% group_by(max_MAF, Group) %>% summarise(
-							lambda_50_Burden = qchisq(median(Pvalue_Burden, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
-							lambda_95_Burden = qchisq(quantile(Pvalue_Burden, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
-							lambda_99_Burden = qchisq(quantile(Pvalue_Burden, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3],
-							lambda_50_SKAT = qchisq(median(Pvalue_SKAT, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
-							lambda_95_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
-							lambda_99_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3],
-							lambda_50 = qchisq(median(Pvalue, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
-							lambda_95 = qchisq(quantile(Pvalue, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
-							lambda_99 = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3]
+							lambda_95_Burden = qchisq(quantile(Pvalue_Burden, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
+							lambda_99_Burden = qchisq(quantile(Pvalue_Burden, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
+							lambda_99.9_Burden = qchisq(quantile(Pvalue_Burden, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3],
+							lambda_95_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
+							lambda_99_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
+							lambda_99.9_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3],
+							lambda_95 = qchisq(quantile(Pvalue, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
+							lambda_99 = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
+							lambda_99.9 = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3]
 							) %>% mutate(ancestry = anc, dataset=dataset, phenotype=phe)
 						i <- i+1
 					}
