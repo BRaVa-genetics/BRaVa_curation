@@ -43,7 +43,7 @@ main <- function(args)
 			for (anc in ancestries) {
 				for (sex in c("ALL", "M", "F")) {
 					file_gene <- grep(
-						paste0(".*cleaned.*", dataset, "\\..*\\.",  phe, ".*", anc, ".*\\.gene\\..*"),
+						paste0(".*cleaned.*", dataset, "\\..*\\.",  phe, "\\..*\\.", sex, "\\..*", anc, ".*\\.gene\\..*"),
 						dir(data_dir, full.names=TRUE, recursive=TRUE), value=TRUE)
 					cat(paste0("determining genomic control factors for ", phe, " in (", dataset, ", ", anc, ")\n"))
 					if (length(file_gene) == 1) {
