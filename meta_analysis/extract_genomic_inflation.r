@@ -53,7 +53,7 @@ main <- function(args)
 						print(file_info)
 						print(file_info$n_cases)
 						if ("n_cases" %in% names(file_info))  {
-							if ((as.integer(file_info$n_cases < 100)) | (as.integer(file_info$n_controls) < 100)) {
+							if ((as.integer(file_info$n_cases) < 100) | (as.integer(file_info$n_controls) < 100)) {
 								cat("not sufficiently many cases, next trait!")
 								next
 							}
