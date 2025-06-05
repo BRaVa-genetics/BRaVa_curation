@@ -59,7 +59,7 @@ main <- function(args)
 							lambda_95 = qchisq(quantile(Pvalue, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
 							lambda_99 = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
 							lambda_99.9 = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[3]
-							) %>% mutate(ancestry = anc, dataset=dataset, phenotype=phe)
+							) %>% mutate(ancestry = anc, dataset=dataset, phenotype=phe, sex=sex)
 						i <- i+1
 					}
 				}
