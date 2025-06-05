@@ -50,6 +50,8 @@ main <- function(args)
 					if (length(file_gene) == 1) {
 						cat(paste0("using file: ", file_gene, "\n"))
 						file_info <- extract_file_info(file_gene)
+						print(file_info)
+						print(file_info$n_cases)
 						if ("n_cases" %in% names(file_info))  {
 							if ((file_info$n_cases < 100) | (file_info$n_controls < 100)) {
 								cat("not sufficiently many cases, next trait!")
