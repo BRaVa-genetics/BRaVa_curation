@@ -53,7 +53,7 @@ dt_inflation <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflati
 # (biobank, trait, ancestry) tuples to not include in meta-analysis
 dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% 
 	filter(max_MAF != 0.01, lambda_value > 1.3) %>% 
-	select(phenotype, dataset, ancestry))
+	select(phenotype, dataset, ancestry, sex))
 dt_gene_hits_all <- setdiff(dt_gene_hits_all, merge(dt_gene_hits_all, dt_inflation))
 
 dt_gene_hits_all <- dt_gene_hits_all %>% mutate(case_control =
