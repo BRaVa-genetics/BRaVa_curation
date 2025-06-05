@@ -1,3 +1,9 @@
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(latex2exp)
+
+source("../meta_analysis_utils.r")
 
 # Count the number of hits, split by all of the data sets and ancestries
 files <- dir(path="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks", full.names=TRUE, recursive=TRUE)
@@ -41,12 +47,13 @@ dt_gene_hits_all <- rbindlist(dt_gene_hits_all, fill=TRUE)
 dt_gene_hits_all <- dt_gene_hits_all %>% filter(max_MAF %in% c("0.001", "1e-04"))
 setkeyv(dt_gene_hits_all, c("phenotype", "dataset", "ancestry"))
 
-# # DEV: find code used to generate inflation_summaries.tsv.gz
-# # Results to exclude
-# dt_inflation <- fread("meta_analysis/inflation_summaries.tsv.gz")
-# dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous", lambda_type %in% 
-# 		c("lambda_95_Burden", "lambda_95", "lambda_95_SKAT")
-# 	) %>% filter(lambda_value > 1.3) %>% select(phenotype, dataset, ancestry, Group))
+# Code to generate inflation_summaries.tsv.gz is 'extract_genomic_inflation.r' in the folder above
+# Run the code on everything using Rscript extract_genomic_inflation.r to update it.
+# DEV: update the code to run on BMRC.
+dt_inflation <- fread("../inflation_summaries.tsv.gz")
+# (biobank, trait, ancestry) tuples to not include in meta-analysis
+dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% filter(max_MAF != 0.01, lambda_value > 1.3) %>% select(phenotype, dataset, ancestry))
+
 # dt_inflation <- rbind(dt_inflation, data.table(
 # 	phenotype = "AlcCons",
 # 	dataset = "genes-and-health",
@@ -81,14 +88,15 @@ for (file in files) {
 }
 
 meta_list <- rbindlist(meta_list) %>% mutate(case_control =
-	ifelse(phenotype %in% case_ctrl, TRUE,
-		ifelse(phenotype %in% cts, FALSE, NA)))
+	ifelse(gsub("_.*", "", phenotype) %in% case_ctrl, TRUE,
+		ifelse(gsub("_.*", "", phenotype) %in% cts, FALSE, NA)))
+meta_list <- meta_list %>% filter(gsub("_.*", "", phenotype) != "AlcCons")
 meta_list_unique <- meta_list %>% group_by(case_control) %>% 
 	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
 	summarise(count = length(unique(paste(Region, phenotype))))
 
 # Ensure that the phenotypes going through to the plot have been meta-analysed/
-dt_gene_hits_all <- dt_gene_hits_all %>% filter(phenotype %in% unique(meta_list$phenotype))
+dt_gene_hits_all <- dt_gene_hits_all %>% filter(paste(phenotype, sex, sep="_") %in% unique(meta_list$phenotype))
 dt_gene_hits <- dt_gene_hits_all %>% group_by(max_MAF, Group, Test, dataset, ancestry) %>% summarise(count = n())
 
 # Damaging, unique (gene, phenotype) pairs, split by dataset and ancestry.

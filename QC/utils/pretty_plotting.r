@@ -406,7 +406,8 @@ get_start_and_end <- function(chr_lengths) {
 
 make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, label=NULL, size_by_p=FALSE, buffer=100000000, title='', subtitle='', threshold=5, chr_lengths=chr_lengths_38,
   colour_aes=NULL, log_p_vals=FALSE, significance_T=5e-8, ggplot_theme=theme_bw, two_tone=TRUE, by_OR=FALSE, colour_1='#2b59a1', colour_2='#5fb756',
-  save_figure=FALSE, file='file_out', scaling=1, width=230, height=100, title_size=NULL, minus_log_p_max=NULL, print_p=FALSE)
+  save_figure=FALSE, file='file_out', scaling=1, width=230, height=100, title_size=NULL, minus_log_p_max=NULL, print_p=FALSE,
+  loglog=FALSE)
 {  
     contigs_ <- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23)
     start_end <- get_start_and_end(chr_lengths)
@@ -464,15 +465,39 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, label=NUL
         )
     }
 
+    if (loglog) {
+        transform_y <- function(y) {
+            out <- numeric(length(y))
+            log_part <- y <= 10
+            out[log_part] <- y[log_part]
+            out[!log_part] <- 10 + 2*(log2(y[!log_part] - 10 + 1))
+            return(out)
+        }
+    } else {
+        transform_y <- function(y) { return(y) }
+    }
+    # Apply transformation
+    dt_plot <- dt_plot %>% mutate(y = transform_y(y))
+    breaks <- c(2, 4, 6, 8, 10, 20, 50, 100, 200, 300)
+    breaks_trans <- transform_y(breaks)
+
     if (size_by_p) {
         p <- ggplot(dt_plot, aes(x=x, y=y, col=colour, size=size)) + geom_point_rast()
     } else {
         p <- ggplot(dt_plot, aes(x=x, y=y, col=colour)) + geom_point_rast(size=0.5)
     }
 
+    if (loglog) {
+        p <- p + scale_y_continuous(
+            breaks = breaks_trans,
+            labels = breaks
+        )
+    } else {
+        p <- p + scale_y_continuous(breaks=scales::pretty_breaks(n=10))
+    }
+
     p <- p + geom_hline(yintercept=-log10(significance_T), color='#E15759', linetype='dashed') +
         scale_x_continuous(breaks=dt_contigs$shifted_position, labels=gsub(23, 'X', dt_contigs$contig)) +
-        scale_y_continuous(breaks=scales::pretty_breaks(n=10)) +
         labs(x='Chromosome', y=TeX("$-\\log_{10}(P)$"),
             title=title, subtitle=subtitle) + ggplot_theme()
 
