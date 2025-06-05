@@ -49,20 +49,12 @@ setkeyv(dt_gene_hits_all, c("phenotype", "dataset", "ancestry"))
 
 # Code to generate inflation_summaries.tsv.gz is 'extract_genomic_inflation.r' in the folder above
 # Run the code on everything using Rscript extract_genomic_inflation.r to update it.
-# DEV: update the code to run on BMRC.
-dt_inflation <- fread("../inflation_summaries.tsv.gz")
+dt_inflation <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz")
 # (biobank, trait, ancestry) tuples to not include in meta-analysis
-dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% filter(max_MAF != 0.01, lambda_value > 1.3) %>% select(phenotype, dataset, ancestry))
-
-# dt_inflation <- rbind(dt_inflation, data.table(
-# 	phenotype = "AlcCons",
-# 	dataset = "genes-and-health",
-# 	ancestry = "SAS", 
-# 	Group = "synonymous"))
-# setkeyv(dt_inflation, c("phenotype", "dataset", "ancestry"))
-
-# dt_gene_hits_all <- setdiff(dt_gene_hits_all,
-# 	merge(dt_gene_hits_all, dt_inflation %>% select(-Group)))
+dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% 
+	filter(max_MAF != 0.01, lambda_value > 1.3) %>% 
+	select(phenotype, dataset, ancestry))
+dt_gene_hits_all <- setdiff(dt_gene_hits_all, merge(dt_gene_hits_all, dt_inflation))
 
 dt_gene_hits_all <- dt_gene_hits_all %>% mutate(case_control =
 	ifelse(phenotype %in% case_ctrl, TRUE,
@@ -90,7 +82,6 @@ for (file in files) {
 meta_list <- rbindlist(meta_list) %>% mutate(case_control =
 	ifelse(gsub("_.*", "", phenotype) %in% case_ctrl, TRUE,
 		ifelse(gsub("_.*", "", phenotype) %in% cts, FALSE, NA)))
-meta_list <- meta_list %>% filter(gsub("_.*", "", phenotype) != "AlcCons")
 meta_list_unique <- meta_list %>% group_by(case_control) %>% 
 	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
 	summarise(count = length(unique(paste(Region, phenotype))))
