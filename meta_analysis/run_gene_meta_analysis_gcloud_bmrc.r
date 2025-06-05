@@ -60,8 +60,19 @@ main <- function(args)
 	}
 
 	# Here, we must remove any files that have been deemed to be inflated.
-	dt_inflation <- 
-	# Apply the cutoff
+	dt_inflation <- fread(args$inflation_file)
+	dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% 
+		filter(max_MAF != 0.01,
+			lambda_value > 1.3,
+			!(lambda_type %in% c("lambda_50_Burden", "lambda_50_SKAT", "lambda_50"))) %>% 
+		select(phenotype, dataset, ancestry))
+	# Manual curation, adding the following (biobank, trait) tuples containing spurious 
+	# associations
+	dt_inflation <- rbind(dt_inflation, data.table(
+		phenotype = c("ColonRectCanc", "Height"),
+		dataset = c("egcut", "mgbb"),
+		ancestry = c("EUR", "AMR")))
+
 	# Remove those (phenotype, biobank, sex) files from the meta-analysis
 	results_dt <- paste(files_gene, collapse=",")
 	# Print the names of the files that will not be included
@@ -201,7 +212,7 @@ parser$add_argument("--n_cases", default=100, required=FALSE,
 	help="Minimum number of cases")
 parser$add_argument("--out_dir", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs",
 	required=FALSE, help="Output folder path")
-parser$add_argument("--inflation-file", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz",
+parser$add_argument("--inflation_file", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz",
 	required=FALSE, help="Inflation file")
 parser$add_argument("--phenotypeID", required=FALSE, default=NULL,
 	help="The phenotype ID to run meta-analysis on. Note: thus exactly must match the naming in input folder.")
