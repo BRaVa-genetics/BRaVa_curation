@@ -45,15 +45,25 @@ for (i in 1:nrow(file_info)) {
 
 dt_gene_hits_all <- rbindlist(dt_gene_hits_all, fill=TRUE)
 dt_gene_hits_all <- dt_gene_hits_all %>% filter(max_MAF %in% c("0.001", "1e-04"))
-setkeyv(dt_gene_hits_all, c("phenotype", "dataset", "ancestry"))
+setkeyv(dt_gene_hits_all, c("phenotype", "dataset", "ancestry", "sex"))
 
 # Code to generate inflation_summaries.tsv.gz is 'extract_genomic_inflation.r' in the folder above
 # Run the code on everything using Rscript extract_genomic_inflation.r to update it.
+# Here, we must remove any files that have been deemed to be inflated.
 dt_inflation <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz")
-# (biobank, trait, ancestry) tuples to not include in meta-analysis
 dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% 
 	filter(max_MAF != 0.01, lambda_value > 1.3) %>% 
 	select(phenotype, dataset, ancestry, sex))
+# Manual curation, adding the following (biobank, trait) tuples containing spurious 
+# associations
+dt_inflation <- rbind(dt_inflation, data.table(
+	phenotype = c("ColonRectCanc", "Height"),
+	dataset = c("egcut", "mgbb"),
+	ancestry = c("EUR", "AMR"),
+	sex = c("ALL", "ALL")))
+
+# Remove those (phenotype, biobank, sex) files from the meta-analysis
+setkeyv(dt_inflation, c("phenotype", "dataset", "ancestry", "sex"))
 dt_gene_hits_all <- setdiff(dt_gene_hits_all, merge(dt_gene_hits_all, dt_inflation))
 
 dt_gene_hits_all <- dt_gene_hits_all %>% mutate(case_control =

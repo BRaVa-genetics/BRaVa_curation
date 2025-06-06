@@ -16,7 +16,6 @@ main <- function(args)
 	
 	# Ensure that the folder is already present
 	system(paste("mkdir -p", out_meta_results_dir))
-	source("meta_analysis_utils.r")
 	source("../phenotypes/BRaVa_phenotypes_utils.r")
 
 	# Assumes that we have the files locally within a file structure as defined in the munging scripts
@@ -87,16 +86,17 @@ main <- function(args)
 			if (length(files_gene) <= 1) { 
 				cat("Either the phenotype is not present, or there is only a single file for:\n")
 				cat(phe, s, "\n")
-				next  
+			} else {
+				files_gene <- paste(files_gene, collapse=",")
+				out <- paste0(out_meta_results_dir, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.tsv.gz")
+				cat(paste0("carrying out meta-analysis of ", phe, " in ", s, "\n"))
+				cat(paste0("\nFiles in the analysis: ",
+					paste0(strsplit(files_gene, split=",")[[1]], collapse='\n'), "\n"))
+				system(paste(
+					"sbatch run_meta_analysis_gcloud_bmrc.sh",
+					files_gene, out))
+				cat(paste0("submitted meta-analysis of ", phe, " completed\n\n"))
 			}
-			out <- paste0(out_meta_results_dir, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.tsv.gz")
-			cat(paste0("carrying out meta-analysis of ", phe, " in ", s, "\n"))
-			cat(paste0("\nFiles in the analysis: ",
-				paste0(strsplit(files_gene, split=",")[[1]], collapse='\n'), "\n"))
-			system(paste(
-				"sbatch run_meta_analysis_gcloud_bmrc.sh",
-				files_gene, out))
-			cat(paste0("submitted meta-analysis of ", phe, " completed\n\n"))
 		}
 	}
 
@@ -106,12 +106,8 @@ main <- function(args)
 	# For each superpopulation
 	for (phe in phes) {
 		for (s in c("ALL", "M", "F")) {
+			
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
-			if (length(files_gene) <= 1) { 
-				cat("Either the phenotype is not present, or there is only a single file for:\n")
-				cat(phe, s, "\n")
-				next 
-			}
 			files_info <- lapply(files_gene, extract_file_info)
 			to_subset <- data.table(
 				filename = files_gene,
@@ -125,19 +121,19 @@ main <- function(args)
 				if (length(files_gene_tmp) <= 1) { 
 					cat("Either the phenotype is not present, or there is only a single file for:\n")
 					cat(phe, s, p, "\n")
-					next 
+				} else {
+					files_gene_tmp <- paste(files_gene_tmp, collapse=",")
+					# Ensure the folder is present
+					system(paste0("mkdir -p ", out_meta_results_dir, "/", p))
+					out <- paste0(out_meta_results_dir, "/", p, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.", p, ".tsv.gz")
+					cat(paste0("carrying out meta-analysis of ", phe, " in ", s, " for ", p, "\n"))
+					cat(paste0("\nFiles in the analysis: ",
+						paste0(strsplit(files_gene_tmp, split=",")[[1]], collapse='\n'), "\n"))
+					system(paste(
+						"sbatch run_meta_analysis_gcloud_bmrc.sh",
+						files_gene_tmp, out))
+					cat(paste0("submitted meta-analysis of ", phe, ":", p, " completed\n\n"))
 				}
-				files_gene_tmp <- paste(files_gene_tmp, collapse=",")
-				# Ensure the folder is present
-				system(paste0("mkdir -p ", out_meta_results_dir, "/", p))
-				out <- paste0(out_meta_results_dir, "/", p, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.", p, ".tsv.gz")
-				cat(paste0("carrying out meta-analysis of ", phe, " in ", s, " for ", p, "\n"))
-				cat(paste0("\nFiles in the analysis: ",
-					paste0(strsplit(files_gene_tmp, split=",")[[1]], collapse='\n'), "\n"))
-				system(paste(
-					"sbatch run_meta_analysis_gcloud_bmrc.sh",
-					files_gene_tmp, out))
-				cat(paste0("submitted meta-analysis of ", phe, ":", p, " completed\n\n"))
 			}
 		}
 	}
@@ -145,12 +141,8 @@ main <- function(args)
 	# for non-EUR
 	for (phe in phes) {
 		for (s in c("ALL", "M", "F")) {
+
 			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
-			if (length(files_gene) <= 1) { 
-				cat("Either the phenotype is not present, or there is only a single file for:\n")
-				cat(phe, s, "non-EUR\n")
-				next 
-			}
 			files_info <- lapply(files_gene, extract_file_info)
 			to_subset <- data.table(
 				filename = files_gene,
@@ -162,20 +154,20 @@ main <- function(args)
 			files_gene_tmp <- (to_subset %>% filter(pop != "EUR"))$filename
 			if (length(files_gene_tmp) <= 1) { 
 				cat("Either the phenotype is not present, or there is only a single file for:\n")
-				cat(phe,  s, "non-EUR\n")
-				next 
+				cat(phe,  s, "non-EUR\n"
+			} else {
+				files_gene_tmp <- paste(files_gene_tmp, collapse=",")
+				# Ensure the folder is present
+				system(paste0("mkdir -p ", out_meta_results_dir, "/non_EUR"))
+				out <- paste0(out_meta_results_dir, "/non_EUR/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.non_EUR.tsv.gz")
+				cat(paste0("carrying out meta-analysis of ", phe, " in ", s, " for non-EUR\n"))
+				cat(paste0("\nFiles in the analysis: ",
+					paste0(strsplit(files_gene_tmp, split=",")[[1]], collapse='\n'), "\n"))
+				system(paste(
+					"sbatch run_meta_analysis_gcloud_bmrc.sh",
+					files_gene_tmp, out))
+				cat(paste0("submitted meta-analysis of ", phe, ":non_EUR completed\n\n"))
 			}
-			files_gene_tmp <- paste(files_gene_tmp, collapse=",")
-			# Ensure the folder is present
-			system(paste0("mkdir -p ", out_meta_results_dir, "/non_EUR"))
-			out <- paste0(out_meta_results_dir, "/non_EUR/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.non_EUR.tsv.gz")
-			cat(paste0("carrying out meta-analysis of ", phe, " in ", s, " for non-EUR\n"))
-			cat(paste0("\nFiles in the analysis: ",
-				paste0(strsplit(files_gene_tmp, split=",")[[1]], collapse='\n'), "\n"))
-			system(paste(
-				"sbatch run_meta_analysis_gcloud_bmrc.sh",
-				files_gene_tmp, out))
-			cat(paste0("submitted meta-analysis of ", phe, ":non_EUR completed\n\n"))
 		}
 	}
 
