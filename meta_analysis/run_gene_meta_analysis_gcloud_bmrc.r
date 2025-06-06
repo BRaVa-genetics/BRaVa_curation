@@ -154,7 +154,7 @@ main <- function(args)
 			files_gene_tmp <- (to_subset %>% filter(pop != "EUR"))$filename
 			if (length(files_gene_tmp) <= 1) { 
 				cat("Either the phenotype is not present, or there is only a single file for:\n")
-				cat(phe,  s, "non-EUR\n"
+				cat(phe,  s, "non-EUR\n")
 			} else {
 				files_gene_tmp <- paste(files_gene_tmp, collapse=",")
 				# Ensure the folder is present
