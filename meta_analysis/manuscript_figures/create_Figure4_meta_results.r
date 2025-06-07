@@ -15,7 +15,7 @@ source("~/Repositories/BRaVa_curation/QC/utils/pretty_plotting.r")
 
 # Meta-analysis files for plotting should have been copied from BMRC to gcloud
 # gsutil cp -r gene gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/
-# gsutil mv 'gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/*gz gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/meta-analysis/
+# gsutil mv 'gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/*gz' gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/meta-analysis/
 
 # Connect to Ensembl BioMart
 ensembl <- useMart("ENSEMBL_MART_ENSEMBL")
