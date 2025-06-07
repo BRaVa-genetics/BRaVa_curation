@@ -66,9 +66,9 @@ main <- function(args)
 							lambda_95_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
 							lambda_99_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
 							lambda_99.9_SKAT = qchisq(quantile(Pvalue_SKAT, probs=0.001, na.rm=TRUE), df=1, lower=FALSE) / chisq[3],
-							lambda_95 = qchisq(quantile(Pvalue, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
-							lambda_99 = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
-							lambda_99.9 = qchisq(quantile(Pvalue, probs=0.001, na.rm=TRUE), df=1, lower=FALSE) / chisq[3]
+							`lambda_95_SKAT-O` = qchisq(quantile(Pvalue, probs=0.05, na.rm=TRUE), df=1, lower=FALSE) / chisq[1],
+							`lambda_99_SKAT-O` = qchisq(quantile(Pvalue, probs=0.01, na.rm=TRUE), df=1, lower=FALSE) / chisq[2],
+							`lambda_99.9_SKAT-O` = qchisq(quantile(Pvalue, probs=0.001, na.rm=TRUE), df=1, lower=FALSE) / chisq[3]
 							) %>% mutate(ancestry = anc, dataset=dataset, phenotype=phe, sex=sex)
 						i <- i+1
 					}
