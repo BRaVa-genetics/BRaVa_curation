@@ -84,7 +84,7 @@ main <- function(args)
 		id.vars = c("Group", "ancestry", "dataset", "phenotype", "max_MAF", "sex"), # Columns to keep
 		measure.vars = c("lambda_95_Burden", "lambda_99_Burden", "lambda_99.9_Burden",
 		               "lambda_95_SKAT", "lambda_99_SKAT", "lambda_99.9_SKAT",  
-		               "lambda_95", "lambda_99", "lambda_99.9"), # Columns to melt
+		               "lambda_95_SKAT-O", "lambda_99_SKAT-O", "lambda_99.9_SKAT-O"), # Columns to melt
 		variable.name = "lambda_type", # Name of the new column for the melted variable names
 		value.name = "lambda_value" # Name of the new column for the melted values
 	)
