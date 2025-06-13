@@ -11,7 +11,7 @@ library(latex2exp)
 files <- dir(path="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs", full.names=TRUE, recursive=TRUE)
 
 files <- gsub("^.*/", "", grep("cleaned", files, value=TRUE))
-source("meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 
 file_info <- rbindlist(lapply(files, extract_file_info), fill=TRUE)
 file_info <- file_info %>% filter(phenotype %in% 
