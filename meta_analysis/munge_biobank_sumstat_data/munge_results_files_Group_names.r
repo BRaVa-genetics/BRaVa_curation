@@ -4,7 +4,7 @@ library(dplyr)
 library(argparse)
 library(rlang)
 
-source("~/Repositories/BRaVa_curation/meta_analysis/meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 options(warn = 2)
 main <- function(args)
 {

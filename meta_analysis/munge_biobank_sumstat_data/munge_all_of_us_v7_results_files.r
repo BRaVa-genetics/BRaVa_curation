@@ -80,13 +80,13 @@ files_to_retain <- rbind(
 
 if (download) {
 	system(paste0(
-		"gsutil -m cp gs://brava-meta-upload-", biobank, "/*.gene.* ",
+		"gsutil -m cp gs://brava-meta-upload-", biobank, "/v7/*.gene.* ",
 		data_dir, "/gene/")
 	)
-	# system(paste0(
-	# 	"gsutil -m cp gs://brava-meta-upload-", biobank, "/*.variant.* ",
-	# 	data_dir, "/variant/")
-	# )
+	system(paste0(
+		"gsutil -m cp gs://brava-meta-upload-", biobank, "/v7/*.variant.* ",
+		data_dir, "/variant/")
+	)
 }
 
 files_to_retain <- files_to_retain %>% 
@@ -117,14 +117,14 @@ system(paste0("Rscript munge_results_files_Group_names.r",
 	" --out_folder ", out_data_dir, "/gene")
 )
 
-# from <- paste0(data_dir, "/variant/", files_to_retain$var_file_name)
-# to <- paste0(out_data_dir, "/variant/", files_to_retain$new_variant_file_name)
+from <- paste0(data_dir, "/variant/", files_to_retain$var_file_name)
+to <- paste0(out_data_dir, "/variant/", files_to_retain$new_variant_file_name)
 
-# file.rename(from, to)
-# system(paste0("Rscript munge_results_files_Group_names.r",
-# 	" --folder ", out_data_dir, "/variant",
-# 	" --type ", "variant",
-# 	" --write",
-# 	" --out_folder ", out_data_dir, "/variant")
-# )
+file.rename(from, to)
+system(paste0("Rscript munge_results_files_Group_names.r",
+	" --folder ", out_data_dir, "/variant",
+	" --type ", "variant",
+	" --write",
+	" --out_folder ", out_data_dir, "/variant")
+)
 
