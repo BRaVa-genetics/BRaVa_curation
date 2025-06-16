@@ -82,7 +82,7 @@ main <- function(args)
 
         # Now run all the tests on the proposed file names
 		exit_status <- system(
-			paste0("Rscript ../../gene_results_file_checks.r",
+			paste0("Rscript gene_results_file_checks.r",
 				" --just_filename",
 				" --file_paths ", new_f,
 				" --type ", type)
