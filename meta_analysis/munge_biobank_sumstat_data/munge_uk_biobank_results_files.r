@@ -4,7 +4,7 @@ library(dplyr)
 library(stringr)
 library(argparse)
 
-source("~/Repositories/BRaVa_curation/meta_analysis/meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 
 # For naming files
 biobank <- "uk-biobank"
@@ -15,8 +15,10 @@ date <- "20240110"
 method <- "SAIGE"
 
 dx_data_dir <- "brava/outputs/step2/sept2023/"
-data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/raw")
-out_data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/cleaned")
+
+data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/raw")
+out_data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/cleaned")
+
 system(paste0("mkdir -p ", data_dir, "/gene/sept2023/combined"))
 system(paste0("mkdir -p ", data_dir, "/variant/sept2023/combined"))
 system(paste0("mkdir -p ", out_data_dir, "/gene"))

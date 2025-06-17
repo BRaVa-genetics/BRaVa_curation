@@ -4,6 +4,16 @@ library(ggplot2)
 library(googlesheets4)
 library(stringr)
 
+BRaVa_pilot_phenotypes <- c(
+	"AMD", "Asth", "AFib", "BenCervUterNeo", "BenIntNeo",
+	"BreastCanc", "CervCanc", "COPD", "CRF", "ColonRectCanc",
+	"CAD", "EFRMB", "FemInf", "Gout", "HF", "HTN", "IBD",
+	"IFHern",    "ILDSarc",   "MatHem", "NonRheuValv", "Pancreat",
+	"PeptUlcer", "PAD", "Psori", "RheumHeaDis", "RheumArth",
+	"Stroke", "T2Diab", "Urolith", "VaricVeins", "VTE", "ALT",
+	"AlcCons", "AST", "BMI", "CRP", "HDLC", "Height", "LDLC", 
+	"TChol", "TG", "WHRBMI", "HipRep")
+
 extract_BRaVa_pilot_phenotypes <- function(pilot_only=TRUE) {
 	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249",
 		sheet="Sequenced_Sample_Sizes", skip=5)

@@ -2,14 +2,10 @@
 library(data.table)
 library(dplyr)
 
-# For naming files
 biobank <- "ccpm"
-last_name <- "White"
-analysis_name <- "pilot"
-freeze_number <- "f4"
 
-data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/raw")
-out_data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/cleaned")
+data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/raw")
+out_data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/cleaned")
 
 system(paste0("mkdir -p ", data_dir, "/gene"))
 system(paste0("mkdir -p ", data_dir, "/variant"))
@@ -37,7 +33,7 @@ if (download) {
 
 # Remove the MatHem file that displays inflation
 system(paste0("rm ", data_dir, "/gene/CCPM.White.pilot.MatHem.f4.FEMALE.EUR.1925.29807.SAIGE.gene.20250216.txt.gz"))
-# NOTE - this is almost certainly also inflated for the variant level results
+system(paste0("rm ", data_dir, "/variant/CCPM.White.pilot.MatHem.f4.FEMALE.EUR.1925.29807.SAIGE.gene.20250210.txt.gz"))
 
 # Rename the variant files.
 for (file in dir(paste0(data_dir, "/variant"), full.names=TRUE)) {

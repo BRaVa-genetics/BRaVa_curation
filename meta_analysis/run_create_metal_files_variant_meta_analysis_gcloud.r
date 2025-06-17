@@ -3,11 +3,12 @@ library(data.table)
 library(dplyr)
 
 # Names of the phenotypes to run
-data_dir <- "~/Repositories/BRaVa_curation/data/meta_analysis/gcloud"
-out_meta_results_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/meta_results/variant")
+data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks")
+out_meta_results_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant")
+
 system(paste("mkdir -p", out_meta_results_dir))
-source("~/Repositories/BRaVa_curation/meta_analysis/meta_analysis_utils.r")
-source("~/Repositories/BRaVa_curation/phenotypes/BRaVa_phenotypes_utils.r")
+source("meta_analysis_utils.r")
+source("../phenotypes/BRaVa_phenotypes_utils.r")
 
 # Assumes that we have the files locally within a file structure as defined in the munging scripts
 # First, let's determine the collection of phenotypes that we are testing and the 
@@ -35,8 +36,7 @@ for (biobank in biobanks)
 }
 
 results_dt <- rbindlist(results_dt_list)
-pilot_phenotypes <- extract_BRaVa_pilot_phenotypes()
-phenotypeIDs <- intersect(pilot_phenotypes, unique(unlist(results_dt$phenotypeID)))
+phenotypeIDs <- intersect(BRaVa_pilot_phenotypes, unique(unlist(results_dt$phenotypeID)))
 
 for (phe in phenotypeIDs)
 {

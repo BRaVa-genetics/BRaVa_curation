@@ -2,13 +2,10 @@
 library(data.table)
 library(dplyr)
 
-# For naming files
 biobank <- "mgbb"
-last_name <- "Koyama"
-analysis_name <- "pilot"
 
-data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/raw")
-out_data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/cleaned")
+data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/raw")
+out_data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/cleaned")
 
 system(paste0("mkdir -p ", data_dir, "/gene"))
 system(paste0("mkdir -p ", data_dir, "/variant"))
@@ -24,13 +21,13 @@ if (download) {
 		"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
 		cloud_gene_folder, "/*.gene.* ", data_dir, "/gene/")
 	)
-	# system(paste0(
-	# 	"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
-	# 	cloud_variant_folder, "/*.variant.* ", data_dir, "/variant/")
-	# )
+	system(paste0(
+		"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
+		cloud_variant_folder, "/*.variant.* ", data_dir, "/variant/")
+	)
 }
 
-source("meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 
 rename_files <- function(results_type="gene", analysis_name="pilot")
 {
@@ -46,7 +43,7 @@ rename_files <- function(results_type="gene", analysis_name="pilot")
 }
 
 rename_files()
-# rename_files(results_type="variant")
+rename_files(results_type="variant")
 
 system(paste0("Rscript munge_results_files_Group_names.r",
 	" --folder ", data_dir, "/gene",
@@ -55,12 +52,12 @@ system(paste0("Rscript munge_results_files_Group_names.r",
 	" --out_folder ", out_data_dir, "/gene")
 )
 
-# system(paste0("Rscript munge_results_files_Group_names.r",
-# 	" --folder ", data_dir, "/variant",
-# 	" --type ", "variant",
-# 	" --write",
-# 	" --out_folder ", out_data_dir, "/variant")
-# )
+system(paste0("Rscript munge_results_files_Group_names.r",
+	" --folder ", data_dir, "/variant",
+	" --type ", "variant",
+	" --write",
+	" --out_folder ", out_data_dir, "/variant")
+)
 
 # Continous phenotypes provided in September
 
@@ -75,10 +72,10 @@ if (download) {
 		"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
 		cloud_gene_folder, "/*_Median.*.gene.*gz ", data_dir, "/gene/", cloud_gene_folder)
 	)
-	# system(paste0(
-	# 	"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
-	# 	cloud_variant_folder, "/*_Median.*.variant.*gz ", data_dir, "/variant/", cloud_variant_folder)
-	# )
+	system(paste0(
+		"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
+		cloud_variant_folder, "/*_Median.*.variant.*gz ", data_dir, "/variant/", cloud_variant_folder)
+	)
 }
 
 # Note that a new function is required for the renaming here
@@ -99,7 +96,7 @@ rename_files <- function(results_type="gene", analysis_name="pilot", subfolder="
 }
 
 rename_files()
-# rename_files(results_type="variant")
+rename_files(results_type="variant")
 
 for (file in dir(paste0(data_dir, "/gene/", cloud_gene_folder), full.names=TRUE)) {
 	dt <- fread(file, nrows=0)
@@ -121,9 +118,9 @@ system(paste0("Rscript munge_results_files_Group_names.r",
 	" --out_folder ", out_data_dir, "/gene")
 )
 
-# system(paste0("Rscript munge_results_files_Group_names.r",
-# 	" --folder ", data_dir, "/variant/20240913",
-# 	" --type ", "variant",
-# 	" --write",
-# 	" --out_folder ", out_data_dir, "/variant")
-# )
+system(paste0("Rscript munge_results_files_Group_names.r",
+	" --folder ", data_dir, "/variant/20240913",
+	" --type ", "variant",
+	" --write",
+	" --out_folder ", out_data_dir, "/variant")
+)

@@ -2,14 +2,10 @@
 library(data.table)
 library(dplyr)
 
-# For naming files
 biobank <- "pmbb"
-last_name <- "rodriguez"
-analysis_name <- "pilot"
-freeze_number <- "1"
 
-data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/raw")
-out_data_dir <- paste0("~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/", biobank, "/cleaned")
+data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/raw")
+out_data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/cleaned")
 
 system(paste0("mkdir -p ", data_dir, "/gene"))
 system(paste0("mkdir -p ", data_dir, "/variant"))
@@ -22,15 +18,16 @@ if (download) {
 		"gsutil -m cp gs://brava-meta-upload-", biobank,
 		"/RUN2/*.gene.* ", data_dir, "/gene/")
 	)
-	# system(paste0(
-	# 	"gsutil -m cp gs://brava-meta-upload-", biobank,
-	# 	"/RUN2/*.variant.* ", data_dir, "/variant/")
-	# )
+	system(paste0(
+		"gsutil -m cp gs://brava-meta-upload-", biobank,
+		"/RUN2/*.variant.* ", data_dir, "/variant/")
+	)
 }
 
 # Remove the MatHem file that displays inflation
 system(paste0("rm ", data_dir, "/gene/pmbb.rodriguez.pilot.MatHem.01.FEMALE.EUR.589.12845.SAIGE.gene.20240515.txt.gz"))
-source("meta_analysis_utils.r")
+system(paste0("rm ", data_dir, "/variant/pmbb.rodriguez.pilot.MatHem.01.FEMALE.EUR.589.12845.SAIGE.variant.20240515.txt.gz"))
+source("../meta_analysis_utils.r")
 
 rename_files <- function(results_type="gene", analysis_name="pilot")
 {
@@ -46,7 +43,7 @@ rename_files <- function(results_type="gene", analysis_name="pilot")
 }
 
 rename_files()
-# rename_files(results_type="variant")
+rename_files(results_type="variant")
 
 system(paste0("Rscript munge_results_files_Group_names.r",
 	" --folder ", data_dir, "/gene",
@@ -55,9 +52,9 @@ system(paste0("Rscript munge_results_files_Group_names.r",
 	" --out_folder ", out_data_dir, "/gene")
 )
 
-# system(paste0("Rscript munge_results_files_Group_names.r",
-# 	" --folder ", data_dir, "/variant",
-# 	" --type ", "variant",
-# 	" --write",
-# 	" --out_folder ", out_data_dir, "/variant")
-# )
+system(paste0("Rscript munge_results_files_Group_names.r",
+	" --folder ", data_dir, "/variant",
+	" --type ", "variant",
+	" --write",
+	" --out_folder ", out_data_dir, "/variant")
+)
