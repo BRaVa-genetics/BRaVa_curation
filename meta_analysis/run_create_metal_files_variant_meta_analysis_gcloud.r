@@ -52,8 +52,8 @@ for (phe in phenotypeIDs)
 		"Rscript create_metal_script.r ",
 		"--phenotypeID", phe,
 		"--files", files_variant,
-		"--out_folder", out_meta_results_dir,
-		"--out_meta_analysis_folder", out_meta_results_dir,
+		"--out_folder", out_metal_file_dir,
+		"--out_meta_analysis_folder", out_meta_results_dir
 		)
 	)
 	cat(paste0("METAL file creation for meta-analysis of ", phe, " completed\n\n"))
