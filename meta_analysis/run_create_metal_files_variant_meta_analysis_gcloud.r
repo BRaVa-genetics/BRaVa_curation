@@ -3,9 +3,11 @@ library(data.table)
 library(dplyr)
 
 # Names of the phenotypes to run
-data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks")
-out_meta_results_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant")
+data_dir <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks"
+out_metal_file_dir <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/METAL/variant"
+out_meta_results_dir <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant"
 
+system(paste("mkdir -p", out_metal_file_dir))
 system(paste("mkdir -p", out_meta_results_dir))
 source("meta_analysis_utils.r")
 source("../phenotypes/BRaVa_phenotypes_utils.r")
@@ -50,7 +52,8 @@ for (phe in phenotypeIDs)
 		"Rscript create_metal_script.r ",
 		"--phenotypeID", phe,
 		"--files", files_variant,
-		"--out_folder", out_meta_results_dir
+		"--out_folder", out_meta_results_dir,
+		"--out_meta_analysis_folder", out_meta_results_dir,
 		)
 	)
 	cat(paste0("METAL file creation for meta-analysis of ", phe, " completed\n\n"))

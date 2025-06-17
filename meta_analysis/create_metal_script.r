@@ -21,7 +21,7 @@ main <- function(args)
 
 	writeLines(c(
 		"",
-		paste0("OUTFILE ", args$phenotypeID, "_variant_meta_analysis .tbl"),
+		paste0("OUTFILE ", args$out_meta_analysis_folder, "/", args$phenotypeID, "_variant_meta_analysis .tbl"),
 		"ANALYZE HETEROGENEITY",
 		"",
 		"QUIT"), fileConn
@@ -36,6 +36,7 @@ parser$add_argument("--phenotypeID", required=TRUE,
 parser$add_argument("--files", default=NULL, required=TRUE,
     help="comma separated string of files to use in the meta-analysis")
 parser$add_argument("--out_folder", default=".", required=FALSE)
+parser$add_argument("--out_meta_analysis_folder", default=".", required=FALSE)
 args <- parser$parse_args()
 
 main(args)
