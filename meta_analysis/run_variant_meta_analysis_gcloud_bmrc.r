@@ -78,13 +78,13 @@ main <- function(args)
 					"only a single file for:\n"))
 				cat(phe, s, "\n")
 			} else {
-				files_vcf <- paste(files_vcf, collapse=" ")
+				files_vcf <- paste(files_vcf, collapse=",")
 				out <- paste0(out_meta_results_dir, "/", phe, "_", s,
 					"_variant_meta_analysis_", n_cases, "_cutoff.vcf.gz")
 				cat(paste0("carrying out meta-analysis of ",
 					phe, " in ", s, "\n"))
 				cat(paste0("\nFiles in the analysis: ",
-					paste0(strsplit(files_vcf, split=" ")[[1]], collapse='\n'),
+					paste0(strsplit(files_vcf, split=",")[[1]], collapse='\n'),
 					"\n"))
 				system(paste(
 					"sbatch",
@@ -120,7 +120,7 @@ main <- function(args)
 						"only a single file for:\n")
 					cat(phe, s, p, "\n")
 				} else {
-					files_vcf_tmp <- paste(files_vcf_tmp, collapse=" ")
+					files_vcf_tmp <- paste(files_vcf_tmp, collapse=",")
 					# Ensure the folder is present
 					system(paste0("mkdir -p ", out_meta_results_dir, "/", p))
 					out <- paste0(out_meta_results_dir, "/", p, "/",
@@ -129,7 +129,7 @@ main <- function(args)
 					cat(paste0("carrying out meta-analysis of ", phe,
 						" in ", s, " for ", p, "\n"))
 					cat(paste0("\nFiles in the analysis: ",
-						paste0(strsplit(files_vcf_tmp, split=" ")[[1]],
+						paste0(strsplit(files_vcf_tmp, split=",")[[1]],
 							collapse='\n'), "\n"))
 					system(paste(
 						"sbatch",
@@ -162,7 +162,7 @@ main <- function(args)
 				"only a single file for:\n")
 				cat(phe,  s, "non-EUR\n")
 			} else {
-				files_vcf_tmp <- paste(files_vcf_tmp, collapse=" ")
+				files_vcf_tmp <- paste(files_vcf_tmp, collapse=",")
 				# Ensure the folder is present
 				system(paste0("mkdir -p ", out_meta_results_dir, "/non_EUR"))
 				out <- paste0(out_meta_results_dir, "/non_EUR/",
@@ -171,7 +171,7 @@ main <- function(args)
 				cat(paste0("carrying out meta-analysis of ", phe,
 					" in ", s, " for non-EUR\n"))
 				cat(paste0("\nFiles in the analysis: ",
-					paste0(strsplit(files_vcf_tmp, split=" ")[[1]],
+					paste0(strsplit(files_vcf_tmp, split=",")[[1]],
 						collapse='\n'), "\n"))
 				system(paste(
 					"sbatch",
@@ -198,7 +198,7 @@ main <- function(args)
 					"only a single file for:\n")
 					cat(phe, s, "for all biobanks except", b, "\n")
 				} else {
-					files_vcf <- paste(files_vcf, collapse=" ")
+					files_vcf <- paste(files_vcf, collapse=",")
 					# Ensure the folder is present
 					system(paste0("mkdir -p ", out_meta_results_dir,
 						"/minus_", b))
@@ -208,7 +208,7 @@ main <- function(args)
 					cat(paste0("carrying out meta-analysis of ", phe,
 						" in ", s, " for all biobanks except ", b, "\n"))
 					cat(paste0("\nFiles in the analysis: ",
-						paste0(strsplit(files_vcf, split=" ")[[1]],
+						paste0(strsplit(files_vcf, split=",")[[1]],
 							collapse='\n'), "\n"))
 					system(paste(
 						"sbatch",
@@ -243,7 +243,7 @@ main <- function(args)
 				"only a single file for:\n")
 				cat(phe,  s, "just uk-biobank and all-of-us\n")
 			} else {
-				files_vcf <- paste(files_vcf, collapse=" ")
+				files_vcf <- paste(files_vcf, collapse=",")
 				# Ensure the folder is present
 				system(paste0("mkdir -p ", out_meta_results_dir,
 					"/just_uk-biobank_and_all-of-us"))
@@ -254,7 +254,7 @@ main <- function(args)
 				cat(paste0("carrying out meta-analysis of ",
 					phe, " in ", s, " for non-EUR\n"))
 				cat(paste0("\nFiles in the analysis: ",
-					paste0(strsplit(files_vcf, split=" ")[[1]],
+					paste0(strsplit(files_vcf, split=",")[[1]],
 						collapse='\n'), "\n"))
 				system(paste(
 					"sbatch",

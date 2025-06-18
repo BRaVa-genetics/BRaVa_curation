@@ -9,6 +9,7 @@ export PATH="$HOME/bin:$PATH"
 export BCFTOOLS_PLUGINS="$HOME/bin"
 
 FILES_VARIANT=$1
+FILES_VARIANT=$(echo "$FILES_VARIANT" | tr ',' ' ')
 OUT=$2
 
 REGION_FILE="/well/lindgren/dpalmer/protein_coding_regions_hg38_no_padding_no_UTR_v39.bed"
