@@ -53,5 +53,4 @@ for (phe in phenotypeIDs) {
 		cat(paste(cmd, "\n"))
 		system(cmd)
 	}
-	break
 }
