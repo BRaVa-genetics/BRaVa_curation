@@ -12,4 +12,6 @@ FILES_VARIANT=$1
 OUT=$2
 
 REGION_FILE="/well/lindgren/dpalmer/protein_coding_regions_hg38_no_padding_no_UTR_v39.bed"
+
+echo "bcftools +metal -Oz -o $OUT -e 'AF>0.01 & AF<0.99' -R $REGION_FILE $FILES_VARIANT"
 bcftools +metal -Oz -o $OUT -e 'AF>0.01 & AF<0.99' -R $REGION_FILE $FILES_VARIANT
