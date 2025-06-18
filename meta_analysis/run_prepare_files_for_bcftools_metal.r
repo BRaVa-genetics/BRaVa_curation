@@ -48,5 +48,7 @@ for (phe in phenotypeIDs) {
 		system(paste(
 			"sbatch prepare_files_for_bcftools_metal.sh",
 			file, out_data_dir))
+		break
 	}
+	break
 }
