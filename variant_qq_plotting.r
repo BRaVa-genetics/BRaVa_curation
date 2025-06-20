@@ -6,7 +6,8 @@ files <- dir("meta_analysis", pattern="rare.exome.tsv.gz", full.names=TRUE)
 length <- 10000
 maxP <- log10(1)
 ribbon_p <- 0.95
-source("QC/utils/pretty_plotting.r")
+source("../QC/utils/pretty_plotting.r")
+source("../phenotypes/BRaVa_phenotypes_utils.r")
 
 phenotype_class <- list(
 	binary = c("AAA","AcApp","AcuLymLeuk","Adenomy","AMD","ALamy","AUD","AloAre",
@@ -30,10 +31,50 @@ phenotype_class <- list(
 		"PsySymp","SchGrades","SCDCAT")
 	)
 
+for (phe in BRaVa_pilot_phenotypes)
+{
+	cat(phe, "\n")
+	files <- grep(paste0(phe, ".*vcf.gz$"),
+			dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/vcf",
+				recursive=TRUE, full.names=TRUE), value=TRUE)
+	meta_file <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_cases_100/", phe, "_ALL_variant_meta_analysis_100_cutoff.vcf.gz")
+		if (file.exists(meta_file)) {
+		cmd <- paste("bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t[ %ES]\t[ %SE]\t[ %LP]\n'", meta_file)
+		dt <- fread(cmd = cmd) %>% 
+			rename(ID=V1, CHR=V2, POS=V3, REF=V4, ALT=V5, BETA=V6, SE=V7, `P-value`=V8) %>%
+			mutate(BETA=as.numeric(BETA), SE=as.numeric(SE), `P-value`=-as.numeric(`P-value`))
+		dt_meta <- dt %>% filter(is.na(`P-value`))
+		setkeyv(dt_meta, c("CHR", "POS", "REF", "ALT"))
+		if (nrow(dt_meta) > 0) {
+			for (file in files) {
+				print(file)
+				cmd <- paste("bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t[ %ES]\t[ %SE]\t[ %LP]\n'", file)
+				dt <- fread(cmd = cmd) %>% 
+					rename(ID=V1, CHR=V2, POS=V3, REF=V4, ALT=V5, BETA=V6, SE=V7, `P-value`=V8) %>%
+					mutate(BETA=as.numeric(BETA), SE=as.numeric(SE), `P-value`=-as.numeric(`P-value`))
+				setkeyv(dt, c("CHR", "POS", "REF", "ALT"))
+				dt_merge <- merge(dt, dt_meta)
+				if (any(dt_merge$`BETA.x` == 0)) {
+					print(dt_merge)
+				}
+			}
+		}
+	} else {
+		cat("meta-analysis results file for ", phe, "doesn't exist...what's going on?\n")
+	}
+}
+
+
 pdf(file="QQ_variant.pdf", width=6, height=4)
 for (file in files)
 {
-	dt <- fread(file, key="P-value")
+	# dt <- fread(file, key="P-value")
+	cmd <- paste("bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t[ %ES]\t[ %SE]\t[ %LP]\n'", file)
+	dt <- fread(cmd = cmd) %>% 
+		rename(ID=V1, CHR=V2, POS=V3, REF=V4, ALT=V5, BETA=V6, SE=V7, `P-value`=V8) %>%
+		mutate(BETA=as.numeric(BETA), SE=as.numeric(SE), `P-value`=-as.numeric(`P-value`))
+	dt <- data.table(dt) %>% filter(!is.na(`P-value`))
+	setkey(dt, "P-value")
 	phenotype <- gsub(".*\\/([A-Za-z0-9]+)_.*", "\\1", file)
 	
 	# We want the QQ to be linear on the log10 scale, so we should sample in that way
@@ -48,10 +89,10 @@ for (file in files)
 	dt_plot <- dt_plot %>% 
 		rename(P_observed = `P-value`) %>% 
 		mutate(
-			P_observed = ifelse(P_observed < 1e-320, 320, -log10(P_observed)),
+			P_observed = ifelse(P_observed < -320, 320, -P_observed),
 			clower = -log10(qbeta(p = (1 - ribbon_p) / 2, shape2 = (nP:1)[elements], shape1 = (1:nP)[elements])),
 			cupper = -log10(qbeta(p = (1 + ribbon_p) / 2, shape2 = (nP:1)[elements], shape1 = (1:nP)[elements])),
-			OR = exp(Effect)
+			OR = exp(BETA)
 		)
 
 	type <- ifelse(phenotype %in% phenotype_class$continuous, "continuous", "binary")

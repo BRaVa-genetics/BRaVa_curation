@@ -8,6 +8,10 @@ main <- function(args)
 	file <- args$file_path
 	out_data_dir <- args$out_data_dir
 	dt <- fread(file)
+	# Remove all variants for which the p.value.NA < 0.01 but the SPA has not 
+	# converged
+	dt <- dt %>% filter(!(SE < 1e-15 & !Is.SPA))
+	dt <- data.table(dt)
 	setkeyv(dt, c("CHR", "POS", "Allele1", "Allele2"))
 	file_tmp <- paste0("/tmp/", gsub(".txt.gz", ".tmp.txt.gz", basename(file)))
 	fwrite(dt, sep='\t', quote=FALSE, file=file_tmp)
