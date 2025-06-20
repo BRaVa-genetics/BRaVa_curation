@@ -73,6 +73,9 @@ main <- function(args)
 		for (s in c("ALL", "M", "F")) {
 			files_vcf <- (results_dt %>% 
 				filter(phenotypeID == phe, sex == s))$filename
+			# For each vcf file - ensure that it is not empty.
+			files_vcf <- files_vcf[-which(
+				sapply(files_vcf, function(f) file.info(f)$size == 0))]
 			if (length(files_vcf) <= 1) { 
 				cat(paste("Either the phenotype is not present, or there is",
 					"only a single file for:\n"))
@@ -115,6 +118,9 @@ main <- function(args)
 
 			for (p in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
 				files_vcf_tmp <- (to_subset %>% filter(pop == !!p))$filename
+				# For each vcf file - ensure that it is not empty.
+				files_vcf_tmp <- files_vcf_tmp[-which(
+					sapply(files_vcf_tmp, function(f) file.info(f)$size == 0))]
 				if (length(files_vcf_tmp) <= 1) { 
 					cat("Either the phenotype is not present, or there is",
 						"only a single file for:\n")
@@ -157,6 +163,10 @@ main <- function(args)
 			)
 			
 			files_vcf_tmp <- (to_subset %>% filter(pop != "EUR"))$filename
+			# For each vcf file - ensure that it is not empty.
+			files_vcf_tmp <- files_vcf_tmp[-which(
+				sapply(files_vcf_tmp, function(f) file.info(f)$size == 0))]
+				
 			if (length(files_vcf_tmp) <= 1) { 
 				cat("Either the phenotype is not present, or there is",
 				"only a single file for:\n")
@@ -193,6 +203,10 @@ main <- function(args)
 
 				files_vcf <- (results_dt_tmp %>% 
 					filter(phenotypeID == phe, sex == s))$filename
+				# For each vcf file - ensure that it is not empty.
+				files_vcf <- files_vcf[-which(
+					sapply(files_vcf, function(f) file.info(f)$size == 0))]
+				
 				if (length(files_vcf) <= 1) { 
 					cat("Either the phenotype is not present, or there is",
 					"only a single file for:\n")
@@ -230,13 +244,9 @@ main <- function(args)
 
 			files_vcf <- (results_dt %>% 
 				filter(phenotypeID == phe, sex == s))$filename
-			files_info <- lapply(files_vcf, extract_file_info)
-			to_subset <- data.table(
-				filename = files_vcf,
-				phenotypeID = sapply(files_info, `[[`, "phenotype"),
-				pop = sapply(files_info, `[[`, "ancestry"),
-				sex = sapply(files_info, `[[`, "sex")
-			)
+			# For each vcf file - ensure that it is not empty.
+			files_vcf <- files_vcf[-which(
+				sapply(files_vcf, function(f) file.info(f)$size == 0))]
 			
 			if (length(files_vcf) <= 1) { 
 				cat("Either the phenotype is not present, or there is",

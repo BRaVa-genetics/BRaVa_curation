@@ -2,7 +2,6 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 
-files <- dir("meta_analysis", pattern="rare.exome.tsv.gz", full.names=TRUE)
 length <- 10000
 maxP <- log10(1)
 ribbon_p <- 0.95
@@ -37,8 +36,11 @@ for (phe in BRaVa_pilot_phenotypes)
 	files <- grep(paste0(phe, ".*vcf.gz$"),
 			dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/vcf",
 				recursive=TRUE, full.names=TRUE), value=TRUE)
-	meta_file <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_cases_100/", phe, "_ALL_variant_meta_analysis_100_cutoff.vcf.gz")
-		if (file.exists(meta_file)) {
+	meta_files <- dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_cases_100/", full.names)
+	meta_files <- grep("vcf.gz$", meta_files, value=TRUE)
+
+	meta_file <- grep(paste0(phe, "_"), meta_files, value=TRUE)
+	if (length(meta_file) == 1) {
 		cmd <- paste("bcftools query -f '%ID\t%CHROM\t%POS\t%REF\t%ALT\t[ %ES]\t[ %SE]\t[ %LP]\n'", meta_file)
 		dt <- fread(cmd = cmd) %>% 
 			rename(ID=V1, CHR=V2, POS=V3, REF=V4, ALT=V5, BETA=V6, SE=V7, `P-value`=V8) %>%
@@ -61,6 +63,7 @@ for (phe in BRaVa_pilot_phenotypes)
 		}
 	} else {
 		cat("meta-analysis results file for ", phe, "doesn't exist...what's going on?\n")
+		print(meta_file)
 	}
 }
 
