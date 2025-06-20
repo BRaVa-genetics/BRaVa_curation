@@ -5,7 +5,6 @@ source("meta_analysis_utils.r")
 source("../phenotypes/BRaVa_phenotypes_utils.r")
 
 # Munge the data to run bcftools metal
-# export BCFTOOLS_PLUGINS="$HOME/bin"
 data_dir <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks"
 out_data_dir <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/vcf/variant"
 
@@ -48,7 +47,5 @@ for (phe in phenotypeIDs) {
 		system(paste(
 			"sbatch prepare_files_for_bcftools_metal.sh",
 			file, out_data_dir))
-		# break
 	}
-	# break
 }
