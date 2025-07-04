@@ -476,9 +476,10 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, label=NUL
     } else {
         transform_y <- function(y) { return(y) }
     }
+    
     # Apply transformation
+    breaks <- c(2, 4, 6, 8, 10, 20, 50, 100, 200, 300, ifelse(max(y) > 300, max(400, 10^ceiling(log10(x))), c()))
     dt_plot <- dt_plot %>% mutate(y = transform_y(y))
-    breaks <- c(2, 4, 6, 8, 10, 20, 50, 100, 200, 300)
     breaks_trans <- transform_y(breaks)
 
     if (size_by_p) {
