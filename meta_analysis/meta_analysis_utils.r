@@ -344,6 +344,28 @@ phenotype_broad_categories <- list(
 	HipRep = "Muscloskeletal"
 )
 
+phenotype_class <- list(
+	binary = c("AAA","AcApp","AcuLymLeuk","Adenomy","AMD","ALamy","AUD","AloAre",
+		"AnoNer","AoSten","Asth","AtopDis","AFib","ADHD","ASD","BCLL","BenCervUterNeo",
+		"BenIntNeo","BenNodGoit","BladCanc","BrainCNSCanc","BreastCanc","BrugSynd",
+		"BuliNer","BullPemph","CarShock","HCM","CRVO","CervCanc","CML","COPD","CRF",
+		"CoffSirSynd","ColonRectCanc","CAD","CCANS","EatDis","Endocar","Endometr",
+		"EsophCanc","EssThrom","EFRMB","FSP","FemInf","FemInfAC","FolLymph","Gout",
+		"GravesDis","HemoChromo","HF","HepCarcin","HTN","HHD","HypoThyr","HypoThyrSec",
+		"IPF","ITP","IBD","IFHern","ILDSarc","IodDef","KabSynd","KidCanc","KleefSynd",
+		"LaryxCanc","Leuk","LiverCanc","LiverFibCirr","LongQTSynd","LymphThyrit",
+		"MalInf","MatHem","MatHypDis","MODYDiab","MultiMyel","MS","MECS","Myocard",
+		"Narco1","NonFuncPitAd","NHL","NonPapTCCBlad","NonRheuValv","OUD","OCD",
+		"OvCanc","Pancreat","ParkDis","PeptUlcer","PAD","PlacInsuf","PCOS",
+		"PolycythVera","Preeclamps","PregLoss","POAG","PrimSjoSynd","Prolactinom",
+		"Psori","RheumHeaDis","RheumArth","RomWardSynd","Sarcoid","SebDerm",
+		"SpinaBifAp","StomCanc","Stroke","SLE","TAAD","ThyroCanc","T2Diab","Urolith",
+		"UterCanc","VaricVeins","VTE"),
+	continuous = c("ALT", "AlcCons", "AST","BMI","CRP","CACS","CK","HDLC","Height",
+		"LDLC","TChol","TG","WHRBMI", "LVH","Append","HipRep","CogAbil","EduAtt",
+		"PsySymp","SchGrades","SCDCAT")
+)
+
 file_check_information <- list(
 	dataset = list(
 		`all-of-us` = c("all-of-us", "All-of-Us", "All-of-us"),
