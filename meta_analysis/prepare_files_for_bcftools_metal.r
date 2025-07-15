@@ -28,8 +28,9 @@ main <- function(args)
 		"/well/lindgren/dpalmer/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna ",
 		"--rm-dup ",
 		gsub(".txt.gz$", ".vcf.gz", paste0(out_data_dir, "/", basename(file))), " -o ",
-		gsub(".txt.gz$", ".deduped.vcf.gz", paste0(out_data_dir, "/", basename(file))), " Oz -W"
+		gsub(".txt.gz$", ".deduped.vcf.gz", paste0(out_data_dir, "/", basename(file))), " -Oz -W"
 		)
+	cat(paste(cmd, "\n"))
 	system(cmd)
 }
 
