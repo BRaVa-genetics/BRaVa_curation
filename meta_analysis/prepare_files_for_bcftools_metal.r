@@ -16,19 +16,18 @@ main <- function(args)
 	}
 	setkeyv(dt, c("CHR", "POS", "Allele1", "Allele2"))
 	file_tmp <- paste0("/tmp/", gsub(".txt.gz", ".tmp.txt.gz", basename(file)))
+	file_vcf_tmp <- paste0("/tmp/", gsub(".txt.gz", ".vcf.gz", basename(file)))
 	fwrite(dt, sep='\t', quote=FALSE, file=file_tmp)
 	cmd <- paste0(
 		"bcftools +munge --no-version -f /well/lindgren/dpalmer/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna ",
-		"-c SAIGE ", file_tmp, " -o ",
-		gsub(".txt.gz$", ".vcf.gz", paste0(out_data_dir, "/", basename(file))), " -Oz -W")
+		"-c SAIGE ", file_tmp, " -o ", file_vcf_tmp, " -Oz -W")
 	cat(paste(cmd, "\n"))
 	system(cmd)
 	cmd <- paste0(
 		"bcftools norm -f ",
 		"/well/lindgren/dpalmer/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna ",
-		"--rm-dup both ",
-		gsub(".txt.gz$", ".vcf.gz", paste0(out_data_dir, "/", basename(file))), " -o ",
-		gsub(".txt.gz$", ".deduped.vcf.gz", paste0(out_data_dir, "/", basename(file))), " -Oz -W"
+		"--rm-dup both ", file_vcf_tmp, " -o ",
+		gsub(".txt.gz$", ".vcf.gz", paste0(out_data_dir, "/", basename(file))), " -Oz -W"
 		)
 	cat(paste(cmd, "\n"))
 	system(cmd)
