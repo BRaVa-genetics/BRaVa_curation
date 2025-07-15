@@ -26,7 +26,7 @@ main <- function(args)
 	cmd <- paste0(
 		"bcftools norm -f ",
 		"/well/lindgren/dpalmer/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna ",
-		"--rm-dup ",
+		"--rm-dup both ",
 		gsub(".txt.gz$", ".vcf.gz", paste0(out_data_dir, "/", basename(file))), " -o ",
 		gsub(".txt.gz$", ".deduped.vcf.gz", paste0(out_data_dir, "/", basename(file))), " -Oz -W"
 		)
