@@ -311,7 +311,7 @@ phenotype_broad_categories <- list(
 	CAD = "Cardiovascular",
 	EFRMB = "Genitourinary",
 	FemInf = "Genitourinary",
-	Gout = "Muscloskeletal",
+	Gout = "Musculoskeletal",
 	HF = "Cardiovascular",
 	HTN = "Cardiovascular",
 	IBD = "Gastrointestinal",
@@ -324,7 +324,7 @@ phenotype_broad_categories <- list(
 	PAD = "Cardiovascular",
 	Psori = "Dermatological",
 	RheumHeaDis = "Cardiovascular",
-	RheumArth = "Muscloskeletal",
+	RheumArth = "Musculoskeletal",
 	Stroke = "Cardiovascular",
 	T2Diab = "Endocrine/Metabolic",
 	Urolith = "Genitourinary",
@@ -336,12 +336,12 @@ phenotype_broad_categories <- list(
 	BMI = "Endocrine/Metabolic",
 	CRP = "Cardiovascular",
 	HDLC = "Cardiovascular",
-	Height = "Muscloskeletal",
+	Height = "Musculoskeletal",
 	LDLC = "Cardiovascular",
 	TChol = "Cardiovascular",
 	TG = "Cardiovascular",
 	WHRBMI = "Endocrine/Metabolic",
-	HipRep = "Muscloskeletal"
+	HipRep = "Musculoskeletal"
 )
 
 phenotype_class <- list(
