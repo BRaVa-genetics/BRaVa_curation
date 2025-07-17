@@ -5,11 +5,11 @@ library(ggplot2)
 length <- 10000
 maxP <- log10(1)
 ribbon_p <- 0.95
-source("../QC/utils/pretty_plotting.r")
-source("../phenotypes/BRaVa_phenotypes_utils.r")
-source("meta_analysis_utils.r")
+source("../../QC/utils/pretty_plotting.r")
+source("../../phenotypes/BRaVa_phenotypes_utils.r")
+source("../meta_analysis_utils.r")
 
-pdf(file="manuscript_figures/Figures/QQ_variant.pdf", width=6, height=4)
+pdf(file="Figures/QQ_variant.pdf", width=6, height=4)
 meta_files <- grep(".vcf.gz$", dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_cases_100", full.names=TRUE), value=TRUE)
 
 for (file in meta_files)

@@ -2,7 +2,7 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 
-source("meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 
 meta_files <- grep(".vcf.gz$",
 	dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_cases_100",
