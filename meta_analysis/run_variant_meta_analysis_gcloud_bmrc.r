@@ -285,8 +285,8 @@ main <- function(args)
 					"/just_uk-biobank_and_all-of-us"))
 				out <- paste0(out_meta_results_dir,
 					"/just_uk-biobank_and_all-of-us/", phe, "_", s,
-					"_gene_meta_analysis_", n_cases,
-					"_cutoff.just_uk-biobank_and_all-of-us.tsv.gz")
+					"_variant_meta_analysis_", n_cases,
+					"_cutoff.just_uk-biobank_and_all-of-us.vcf.gz")
 				cat(paste0("carrying out meta-analysis of ",
 					phe, " in ", s, " for non-EUR\n"))
 				cat(paste0("\nFiles in the analysis: ",
@@ -315,7 +315,7 @@ parser$add_argument("--out_dir", default="/well/lindgren/dpalmer/BRaVa_meta-anal
 parser$add_argument("--inflation_file", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz",
 	required=FALSE, help="Inflation file")
 parser$add_argument("--phenotypeID", required=FALSE, default=NULL,
-	help="The phenotype ID to run meta-analysis on. Note: thus exactly must match the naming in input folder.")
+	help="The phenotype ID to run meta-analysis on. Note: this exactly must match the naming in input folder.")
 args <- parser$parse_args()
 
 main(args)

@@ -534,7 +534,7 @@ file_check_information <- list(
 		`EAS` = c("EAS", "eas"),
 		`EUR` = c("EUR", "eur"),
 		`MID` = c("MID", "mid"),
-		`SAS` = c("SAS", "sas")
+		`SAS` = c("SAS", "sas", "CSA")
 	),
 	type = list(
 		`gene` = c("Gene", "gene"),
