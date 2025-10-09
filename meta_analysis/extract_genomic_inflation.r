@@ -32,9 +32,11 @@ main <- function(args)
 		phes <- phe
 	}
 
-	datasets <- c("all-of-us", "alspac", "biome", "bbj", "ckb", "ccpm",
-		"decode", "egcut", "dan-rav", "genes-and-health", "gel", "pmbb",
-		"mgbb", "qatar-genomes", "uk-biobank", "viking-genes")
+	# datasets <- c("all-of-us", "alspac", "biome", "bbj", "ckb", "ccpm",
+	# 	"decode", "egcut", "dan-rav", "genes-and-health", "gel", "pmbb",
+	# 	"mgbb", "qatar-genomes", "uk-biobank", "viking-genes")
+	datasets <- c("all-of-us", "biome", "bbj", "ccpm", "egcut",
+		"genes-and-health", "gel", "pmbb", "mgbb", "uk-biobank")
 
 	ancestries <- c("AFR", "AMR", "EAS", "EUR", "SAS")
 	i <- 1
