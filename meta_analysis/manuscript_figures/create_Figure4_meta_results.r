@@ -1,3 +1,5 @@
+#!/bin/Rscript
+
 # Create the manhattan plots
 # What do we need for this?
 # The region, the gene name, the minimum P-value among the hits
