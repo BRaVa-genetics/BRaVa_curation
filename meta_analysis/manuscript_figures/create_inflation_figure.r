@@ -5,8 +5,8 @@ library(latex2exp)
 
 # Results to exclude
 # here on the cluster /well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz
-# dt_inflation <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz")
-dt_inflation <- fread("../inflation_summaries.tsv.gz")
+dt_inflation <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz")
+# dt_inflation <- fread("../inflation_summaries.tsv.gz")
 dt_inflation <- dt_inflation %>% filter(Group == "synonymous") %>% filter(max_MAF != 0.01, lambda_value < 1.3)
 
 # Ensure variables are factors

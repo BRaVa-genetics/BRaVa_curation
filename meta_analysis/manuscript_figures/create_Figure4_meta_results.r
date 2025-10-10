@@ -13,7 +13,7 @@ library(ggplot2)
 devtools::install_github("mkanai/rgsutil")
 library(rgsutil)
 source("../meta_analysis_utils.r")
-source("../QC/utils/pretty_plotting.r")
+source("../../QC/utils/pretty_plotting.r")
 
 # Meta-analysis files for plotting should have been copied from BMRC to gcloud
 # gsutil cp -r gene gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/
