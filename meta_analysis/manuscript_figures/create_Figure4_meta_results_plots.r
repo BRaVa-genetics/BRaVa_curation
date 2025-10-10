@@ -3,8 +3,8 @@ library(dplyr)
 library(ggplot2)
 devtools::install_github("mkanai/rgsutil")
 library(rgsutil)
-source("~/Repositories/BRaVa_curation/meta_analysis/meta_analysis_utils.r")
-source("~/Repositories/BRaVa_curation/QC/utils/pretty_plotting.r")
+source("../meta_analysis_utils.r")
+source("../..//QC/utils/pretty_plotting.r")
 
 significance_T1 <- 6.7e-7
 significance_T2 <- 2.5e-7
@@ -155,7 +155,7 @@ file_root <- c("meta_analysis", "AFR", "AMR", "EAS", "EUR", "SAS", "non_EUR")
 
 for (i in 1:length(file_root)) {
 	meta_list <- fread(
-		paste0("~/Repositories/BRaVa_curation/data/meta_analysis/meta_results/",
+		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
 			file_root[i], "_figure_4.tsv.gz"))
 	meta_list <- meta_list %>% mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype]))
 	meta_list <- meta_list %>% filter(phenotype != "AlcCons")
@@ -213,7 +213,7 @@ for (i in 1:length(file_root)) {
 file_root <- c("meta_analysis")
 for (i in 1:length(file_root)) {
 	meta_list <- fread(
-		paste0("~/Repositories/BRaVa_curation/data/meta_analysis/meta_results/",
+		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
 			file_root[i], "_figure_4.tsv.gz"))
 	meta_list <- meta_list %>% filter(phenotype != "AlcCons")
 	# Create the Burden, SKAT, and SKAT-O versions
@@ -257,34 +257,35 @@ for (i in 1:length(file_root)) {
 	}
 }
 
-# for (i in 1:length(file_paths)) {
-# 	meta_list <- fread(
-# 		paste0("~/Repositories/BRaVa_curation/data/meta_analysis/meta_results/",
-# 			file_root[i], "_figure_4.tsv.gz"))
-# 	for (phe in unique(meta_list$phenotype)) {
-# 		cat(phe, "\n")
-# 		meta_list_tmp <- meta_list %>% filter(phenotype == phe)
-# 		p <- make_manhattan_plot(meta_list_tmp$chromosome_name,
-# 			meta_list_tmp$start_position,
-# 			meta_list_tmp$Pvalue,
-# 			threshold=1000, significance_T = 6.7e-7,
-# 			label=meta_list_tmp$external_gene_name, 
-# 			colour_1 = "#6583E6",
-# 			colour_2 = "#384980")
-# 		threshold <- ifelse(meta_list_tmp$case_control[1], 10, 10)
-# 		p$p <- p$p + geom_label_repel(
-# 			data = unique(subset(p$dt, y > threshold) %>% group_by(labels) %>% 
-# 				filter(y == max(y))) %>% ungroup(),
-# 			size = 2, aes(label=labels),
-# 			color='grey30', box.padding = 0.2, force = 0.3,
-# 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50')
-# 		width <- 230
-# 		height <- 100
-# 		scaling <- 1
-# 		file <- paste0(phe, "_", file_root[i])
-# 		ggsave(paste0(file, '.jpg'), p$p, width=width*scaling,
-# 			height=height*scaling, units='mm')
-# 		width <- 150
-# 		print(meta_list_tmp %>% filter(Pvalue < 6.7e-7))
-# 	}
-# }
+# This is for each phenotype
+for (i in 1:length(file_paths)) {
+	meta_list <- fread(
+		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
+			file_root[i], "_figure_4.tsv.gz"))
+	for (phe in unique(meta_list$phenotype)) {
+		cat(phe, "\n")
+		meta_list_tmp <- meta_list %>% filter(phenotype == phe)
+		p <- make_manhattan_plot(meta_list_tmp$chromosome_name,
+			meta_list_tmp$start_position,
+			meta_list_tmp$Pvalue,
+			threshold=1000, significance_T = 6.7e-7,
+			label=meta_list_tmp$external_gene_name, 
+			colour_1 = "#6583E6",
+			colour_2 = "#384980")
+		threshold <- ifelse(meta_list_tmp$case_control[1], 10, 10)
+		p$p <- p$p + geom_label_repel(
+			data = unique(subset(p$dt, y > threshold) %>% group_by(labels) %>% 
+				filter(y == max(y))) %>% ungroup(),
+			size = 2, aes(label=labels),
+			color='grey30', box.padding = 0.2, force = 0.3,
+			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50')
+		width <- 230
+		height <- 100
+		scaling <- 1
+		file <- paste0(phe, "_", file_root[i])
+		ggsave(paste0("Figures/", file, '.jpg'), p$p, width=width*scaling,
+			height=height*scaling, units='mm')
+		width <- 150
+		print(meta_list_tmp %>% filter(Pvalue < 6.7e-7))
+	}
+}
