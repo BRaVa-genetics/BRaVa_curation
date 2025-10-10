@@ -9,7 +9,6 @@ source("meta_analysis_utils.r")
 sample_overlap_folder <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100_sample_overlap"
 no_sample_overlap_folder <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100_no_overlap"
 
-
 files <- grep("gz$", dir(sample_overlap_folder), value=TRUE)
 files_sample_overlap <- paste0(sample_overlap_folder, "/", files)
 files_no_sample_overlap <- paste0(no_sample_overlap_folder, "/", files)
