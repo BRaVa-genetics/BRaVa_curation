@@ -11,8 +11,8 @@ source("../meta_analysis_utils.r")
 # the data back in is carried out on the cluster
 # Read in all of the information
 
-files <- dir(
-	path="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/",
+gene_files <- dir(
+	path="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100",
 	full.names=TRUE)
 
 # First use the ALL or EUR file to define the set of pairs that make it through
