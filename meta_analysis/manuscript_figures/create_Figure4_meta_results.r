@@ -10,8 +10,8 @@ library(dplyr)
 library(ggplot2)
 devtools::install_github("mkanai/rgsutil")
 library(rgsutil)
-source("~/Repositories/BRaVa_curation/meta_analysis/meta_analysis_utils.r")
-source("~/Repositories/BRaVa_curation/QC/utils/pretty_plotting.r")
+source("../meta_analysis_utils.r")
+source("../QC/utils/pretty_plotting.r")
 
 # Meta-analysis files for plotting should have been copied from BMRC to gcloud
 # gsutil cp -r gene gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/
@@ -19,6 +19,7 @@ source("~/Repositories/BRaVa_curation/QC/utils/pretty_plotting.r")
 
 # Connect to Ensembl BioMart
 ensembl <- useMart("ENSEMBL_MART_ENSEMBL")
+cloud <- FALSE
 
 # Choose the dataset for human genes
 ensembl_dataset <- useDataset("hsapiens_gene_ensembl", mart = ensembl)
@@ -36,27 +37,46 @@ gene_info <- getBM(attributes = c(
 gene_info <- data.table(gene_info, key = "ensembl_gene_id")
 
 # Download the results files using Masa's rgsutil
+# file_paths <- c(
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/meta-analysis/",
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/AFR/",
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/AMR/",
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/EAS/",
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/EUR/",
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/SAS/",
+# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/non_EUR/"
+# )
+
 file_paths <- c(
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/meta-analysis/",
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/AFR/",
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/AMR/",
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/EAS/",
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/EUR/",
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/SAS/",
-	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/non_EUR/"
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100",
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/AFR",
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/AMR",
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/EAS",
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/EUR",
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/SAS",
+	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/non_EUR"
 )
 
 file_root <- c("meta_analysis", "AFR", "AMR", "EAS", "EUR", "SAS", "non_EUR")
 
 for (i in 1:length(file_paths)) {
 	# First, grab the files
-	files <- system(paste("gsutil ls", file_paths[i]), intern=TRUE)
+	if (cloud) {
+		files <- system(paste("gsutil ls", file_paths[i]), intern=TRUE)
+	} else {
+		files <- grep(".gz$", dir(file_paths[i], full.names=TRUE), value=TRUE)
+	}
 	meta_list <- list()
 
 	for (file in files) {
 		cat(file, "\n")
 		phenotype <- gsub(".*/(.*)_gene_meta_analysis_.*", "\\1", file)
-		meta_list[[file]] <- rgsutil::read_gsfile(file) %>% filter(
+		if (cloud) {
+			meta_list[[file]] <- rgsutil::read_gsfile(file)
+		} else {
+			meta_list[[file]] <- fread(file)
+		}
+		meta_list[[file]] <- meta_list[[file]] %>% filter(
 			max_MAF %in% c("1e-04", "0.001"),
 			Group %in% c(
 				"damaging_missense_or_protein_altering",
@@ -73,7 +93,7 @@ for (i in 1:length(file_paths)) {
 	meta_list <- merge(gene_info, meta_list)
 	meta_list <- meta_list %>% filter(chromosome_name %in% c(seq(1,22), "X"))
 
-	# Remove the mosaic genes?
+	# Remove the mosaic genes:
 	meta_list <- meta_list %>% filter(!ensembl_gene_id %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))
 	meta_list <- meta_list %>% mutate(Pvalue = ifelse(Pvalue == 0, 1e-320, Pvalue))
 	meta_list <- meta_list %>% mutate(phenotype = gsub("_.*", "", phenotype))
@@ -83,5 +103,5 @@ for (i in 1:length(file_paths)) {
 
 	# Write the information to disk, to speed up recreation of the plots.
 	fwrite(meta_list, quote=FALSE, sep='\t',
-		file=paste0("~/Repositories/BRaVa_curation/data/meta_analysis/meta_results/", file_root[i], "_figure_4.tsv.gz"))
+		file=paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/", file_root[i], "_figure_4.tsv.gz"))
 }

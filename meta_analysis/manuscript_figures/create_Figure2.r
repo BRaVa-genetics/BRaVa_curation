@@ -1,5 +1,4 @@
 #!/usr/bin/env Rscript
-
 library(dplyr)
 library(ggplot2)
 library(patchwork)
@@ -7,7 +6,7 @@ devtools::install_github("mkanai/rgsutil")
 library(rgsutil)
 library(gghighlight)
 library(ggtern)
-source("~/Repositories/BRaVa_curation/meta_analysis/meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 
 options(ggrastr.default.dpi = 300)
 

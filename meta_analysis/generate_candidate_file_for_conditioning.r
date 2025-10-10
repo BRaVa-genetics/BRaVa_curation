@@ -54,7 +54,7 @@ dt_final <- rbindlist(dt_list)
 fwrite(dt_final, "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/candidates_from_meta_101025.tsv.gz", sep='\t', quote=FALSE)
 
 # Double check to ensure that the ALL meta results are all present within this less stringent superset
-dt_all <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_full_meta_060625.tsv.gz")
+dt_all <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_full_meta_101025.tsv.gz")
 dt_all_unique <- unique(dt_all %>% dplyr::select(Region, phenotype) %>% mutate(phenotype = gsub("_.*", "", phenotype)))
 
 # Then filter to the subset of unique phenotype gene rows
