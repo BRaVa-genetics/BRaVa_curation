@@ -1,3 +1,4 @@
+#!/bin/Rscript
 library(data.table)
 library(dplyr)
 library(ggplot2)
@@ -10,7 +11,7 @@ library(latex2exp)
 # files <- dir(path="../data/meta_analysis/gcloud", full.names=TRUE, recursive=TRUE)
 # BMRC
 files <- dir(path="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs", full.names=TRUE, recursive=TRUE)
-files <- gsub("^.*/", "", grep("cleaned", files, value=TRUE))
+files <- gsub("^.*/", "", grep("/cleaned/", files, value=TRUE))
 source("../meta_analysis_utils.r")
 
 file_info <- rbindlist(lapply(files, extract_file_info), fill=TRUE)
