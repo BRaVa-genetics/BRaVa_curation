@@ -68,7 +68,7 @@ lapply(plots, print)
 dev.off()
 
 # Meta-analysis results
-dt_inflation <- fread("../inflation_summaries_meta.tsv.gz")
+dt_inflation <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries_meta.tsv.gz")
 dt_inflation <- dt_inflation %>% filter(Group == "synonymous") %>% 
   filter(max_MAF != 0.01, (
     (type == "Stouffer" & class %in% c("SKAT", "SKAT-O")) |
