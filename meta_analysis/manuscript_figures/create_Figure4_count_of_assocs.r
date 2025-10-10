@@ -1,3 +1,4 @@
+#!/bin/Rscript
 library(data.table)
 library(dplyr)
 library(ggplot2)
@@ -7,7 +8,7 @@ source("../meta_analysis_utils.r")
 
 # Count the number of hits, split by all of the data sets and ancestries
 files <- dir(path="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks", full.names=TRUE, recursive=TRUE)
-files <- grep("cleaned", files, value=TRUE)
+files <- grep("/cleaned/", files, value=TRUE)
 gene_files <- grep("\\.gene\\.", files, value=TRUE)
 
 file_info <- rbindlist(lapply(gene_files, extract_file_info), fill=TRUE)
@@ -93,7 +94,7 @@ meta_list <- rbindlist(meta_list) %>% mutate(case_control =
 	ifelse(gsub("_.*", "", phenotype) %in% case_ctrl, TRUE,
 		ifelse(gsub("_.*", "", phenotype) %in% cts, FALSE, NA)))
 # Write the results
-fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_full_meta_060625.tsv.gz",
+fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_full_meta_101025.tsv.gz",
 	meta_list %>% filter(hit), sep='\t', quote=FALSE)
 
 meta_list_unique <- meta_list %>% filter(hit) %>% group_by(case_control) %>% 
