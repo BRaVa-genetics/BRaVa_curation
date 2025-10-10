@@ -1,3 +1,4 @@
+#!/bin/Rscript
 library(data.table)
 library(dplyr)
 
@@ -13,7 +14,6 @@ source("../meta_analysis_utils.r")
 files <- dir(
 	path="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/",
 	full.names=TRUE)
-gene_files <-  files[!grepl("extra_cauchy", files)]
 
 # First use the ALL or EUR file to define the set of pairs that make it through
 # (this'll keep the file size down).

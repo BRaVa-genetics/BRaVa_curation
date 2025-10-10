@@ -5,7 +5,7 @@ library(ggplot2)
 devtools::install_github("mkanai/rgsutil")
 library(rgsutil)
 source("../meta_analysis_utils.r")
-source("../..//QC/utils/pretty_plotting.r")
+source("../../QC/utils/pretty_plotting.r")
 
 significance_T1 <- 6.7e-7
 significance_T2 <- 2.5e-7

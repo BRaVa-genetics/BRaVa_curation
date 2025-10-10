@@ -1,17 +1,17 @@
+#!/bin/Rscript
+
 # We have plotting comparing effect sizes but not an explicit test
 # Here we create those collections of tests
 
 # Take a look at Jurgens to see what they did
-
 # Deming regression
-
 # Get this sorted. They definitely included a bunch of caveats to get it to work
 
 library(deming)
 library(dplyr)
 library(data.table)
 
-gene_files_list <- fread("Burden_comparison_for_plotting_vs_EUR.tsv.gz") %>% 
+gene_files_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/Burden_comparison_for_plotting_vs_EUR.tsv.gz") %>% 
 	mutate(
 		sign_BETA_Burden = 1, #sign(BETA_Burden),
 		BETA_Burden = sign_BETA_Burden * BETA_Burden,
