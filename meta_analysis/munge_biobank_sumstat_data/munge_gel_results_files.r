@@ -54,16 +54,20 @@ for (cloud_gene_folder in cloud_gene_folders) {
 	}
 }
 
-cloud_variant_folder <- "pilot_32_phenotypes_allancestries_20250217/RVAT_single_variant_summaries/"
+cloud_variant_folder <- "pilot_32_phenotypes_allancestries_20250217/RVAT_single_variant_summaries_withAF/"
 cloud_variant_folders <- paste0(cloud_variant_folder, c("AFR", "EAS", "EUR", "SAS"))
 
 for (cloud_variant_folder in cloud_variant_folders) {
 	if (download) {
 		system(paste0(
-				"gsutil -m cp gs://brava-meta-upload-", biobank, "/",
-				cloud_variant_folder, "/*.variant.* ", data_dir, "/variant/")
+				"gsutil -m cp 'gs://brava-meta-upload-", biobank, "/",
+				cloud_variant_folder, "/*.variant*' ", data_dir, "/variant/")
 			)
 	}
+}
+
+for (file in dir(paste0(data_dir, "/variant"), full.names=TRUE)) {
+	system(paste0("mv ", file, " ", gsub("\\.variant_withAF\\.", "\\.variant\\.", file)))
 }
 
 system(paste0("Rscript munge_results_files_Group_names.r",
