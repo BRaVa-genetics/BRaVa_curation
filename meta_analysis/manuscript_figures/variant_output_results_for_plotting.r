@@ -1,3 +1,4 @@
+#!/bin/Rscript
 library(data.table)
 library(dplyr)
 library(ggplot2)
@@ -113,4 +114,4 @@ meta <- rbindlist(meta_list)
 meta$ancestry <- "all"
 
 fwrite(meta, sep = "\t", quote=FALSE,
-	file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/all_variant_assocs_from_meta_101025.tsv.gz")
+	file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/all_assocs_from_meta_101025.tsv.gz")
