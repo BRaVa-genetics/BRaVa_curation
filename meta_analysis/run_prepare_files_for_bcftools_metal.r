@@ -24,13 +24,13 @@ for (biobank in biobanks)
 	results <- lapply(biobank_results_files, extract_file_info)
 	results_dt_list[[biobank]] <- data.table(
 		filename = biobank_results_files_full,
-		phenotypeID = sapply(results, `[`, 4),
-		pop = sapply(results, `[`, 7),
-		binary = sapply(results, `[`, "binary")
+		phenotypeID = sapply(results, `[[`, 4),
+		pop = sapply(results, `[[`, 7),
+		binary = sapply(results, `[[`, "binary")
 		) %>% 
-	mutate(n_cases = ifelse(binary, sapply(results, `[`, "n_cases"), NA),
-		n_controls = ifelse(binary, sapply(results, `[`, "n_controls"), NA),
-		n = ifelse(binary, NA, sapply(results, `[`, "n"))) %>% 
+	mutate(n_cases = as.integer(unlist(ifelse(!binary, NA, sapply(results, `[[`, "n_cases")))),
+		n_controls = as.integer(unlist(ifelse(!binary, NA, sapply(results, `[[`, "n_controls")))),
+		n = as.integer(unlist(ifelse(binary, NA, sapply(results, `[[`, "n"))))) %>% 
 	filter((n > min_cases) | 
 		((n_controls > min_cases) & (n_cases > min_cases)))
 }
