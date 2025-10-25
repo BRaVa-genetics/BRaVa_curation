@@ -37,9 +37,7 @@ dt_info <- dt_info %>% filter(binary) %>% mutate(
 	(as.integer(n_cases) + as.integer(n_controls))) %>%
 mutate(
 	Biobank = unlist(renaming_plot_biobank_list[dataset]),
-	Description = unlist(renaming_phenotype_list[phenotype]))
-
-dt_info <- fread("Tables/table_for_creation_of_prevalence_plots.tsv") %>%
+	Description = unlist(renaming_phenotype_list[phenotype])) %>%
 	filter(phenotype %in% 
 		c("AFib", "AMD", "AST", "Asth", "BenCervUterNeo", "BenIntNeo",
 		"BMI", "BreastCanc", "CAD", "CervCanc", "ColonRectCanc", "COPD",
