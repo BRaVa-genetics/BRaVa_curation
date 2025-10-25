@@ -310,4 +310,6 @@ plt <- dplyr::mutate(dat.tern,
   theme(strip.text = element_text(size = 12))
 
 ggtern::ggsave("Figures/ternery.pdf", plt, height = 3.6, width = 3.6)
-
+system("mv Figures/PCA_PC1_PC2_per_cohort.pdf Figures_main_text/Figure2.pdf")
+system("mv Figures/PCA_PC3_PC4_per_cohort.pdf Figures_supplement/FigureS1.pdf")
+system("mv Figures/PCA_PC5_PC6_per_cohort.pdf Figures_supplement/FigureS2.pdf")

@@ -36,7 +36,7 @@ get_category_colors <- function(category=NULL)
 		Respiratory = color_respiratory,
 		Neoplasms = color_neoplasms,
 		Genitourinary = color_urinary,
-		Muscloskeletal = color_musculoskeletal,
+		Musculoskeletal = color_musculoskeletal,
 		Gastrointestinal = color_digestive,
 		Dermatological = color_dermatologic,
 		`Endocrine/Metabolic` = color_metabolic,
@@ -159,7 +159,6 @@ for (i in 1:length(file_root)) {
 		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
 			file_root[i], "_figure_4.tsv.gz"))
 	meta_list <- meta_list %>% mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype]))
-	meta_list <- meta_list %>% filter(phenotype != "AlcCons")
 	# Create the Burden, SKAT, and SKAT-O versions
 	# Do the same thing, but split by case-control vs cts (way more power for cts).
 	for (cc in c(TRUE, FALSE)) {
@@ -211,12 +210,12 @@ for (i in 1:length(file_root)) {
 	}
 }
 
-file_root <- c("meta_analysis")
+file_root <- c("meta_analysis", "AFR", "AMR", "EAS", "EUR", "SAS", "non_EUR")
+
 for (i in 1:length(file_root)) {
 	meta_list <- fread(
 		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
 			file_root[i], "_figure_4.tsv.gz"))
-	meta_list <- meta_list %>% filter(phenotype != "AlcCons")
 	# Create the Burden, SKAT, and SKAT-O versions
 	# Do the same thing, but split by case-control vs cts (way more power for cts).
 	for (cc in c(TRUE, FALSE)) {
