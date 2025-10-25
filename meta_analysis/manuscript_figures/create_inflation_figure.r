@@ -2,6 +2,9 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 library(latex2exp)
+library(RColorBrewer)
+
+source("../meta_analysis_utils.r")  # must include pop_colors here
 
 # Results to exclude
 # here on the cluster /well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz
@@ -38,25 +41,37 @@ dt[, max_MAF := factor(sapply(as.character(max_MAF), function(x) {
 }))]
 
 plots <- list()
+my_cols <- brewer.pal(12, "Set3")  # Get 12 Set3 colors
+names(my_cols) <- c("All of Us", "Biobank Japan", "BioMe",
+  "CCPM", "EGCUT", "Genes & Health", "Genomics England", "MGBB",
+  "PMBB", "UK Biobank")
+
 # Plot for each ancestry
 for (anc in unique(dt$ancestry)) {
   dt_anc <- dt[ancestry == anc]
+  dt_anc <- dt_anc %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset]))
 
   p <- ggplot(dt_anc, aes(x = dataset, y = lambda_value)) +
-    geom_boxplot() +
+    geom_jitter(
+      width = 0.2,                      # Controls horizontal spread
+      alpha = 0.5,                      # Transparency
+      size = 1.5,                       # Point size
+      aes(color = as.factor(dataset))
+    ) + scale_color_manual(values = my_cols[dt_anc$dataset]) +
+    geom_boxplot(outlier.shape = NA, alpha=0.3) +
     facet_grid(
       rows = vars(max_MAF),
       cols = vars(lambda_type),
       labeller = label_parsed
     ) +
-    theme_bw() +
+    theme_minimal() +
     labs(
-      title = paste("Ancestry:", anc),
+      title = anc,
       x = "Dataset",
       y = expression(lambda~"value")
     ) +
     theme(
-      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      plot.title = element_text(size = 16, face = "bold", hjust = 0),
       axis.text.x = element_text(angle = 45, hjust = 1),
       strip.text = element_text(size = 10)
     )
@@ -106,10 +121,16 @@ lambda_exprs <- levels(dt$lambda_type)
 names(lambda_exprs) <- lambda_exprs
 
 p <- ggplot(dt, aes(x = lambda_type, y = lambda_value)) +
-  geom_boxplot() +
+  geom_jitter(
+      width = 0.2,                      # Controls horizontal spread
+      alpha = 0.5,                      # Transparency
+      size = 1.5,                       # Point size
+      aes(color = class)
+    ) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.3) +
   facet_wrap(~max_MAF, labeller = label_parsed) +
   scale_x_discrete(labels = parse(text = lambda_exprs)) +
-  theme_bw() +
+  theme_minimal() + scale_fill_brewer(palette = "Set3") +
   labs(x = "Test type", y = expression(lambda~"value")) +
   theme(
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
