@@ -22,7 +22,8 @@ source("../meta_analysis_utils.r")
 # of the biobanks
 
 files <- dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks",
-	recursive=TRUE)
+	full.names=TRUE, recursive=TRUE)
+files <- basename(grep("cleaned/gene", files, value=TRUE))
 dt_info <- rbindlist(lapply(files, extract_file_info), fill=TRUE)
 dt_info <- dt_info %>% mutate(dataset = gsub(".*/", "", dataset)) %>% 
 	mutate(sampling_strategy = ifelse(
@@ -38,10 +39,6 @@ mutate(
 	Biobank = unlist(renaming_plot_biobank_list[dataset]),
 	Description = unlist(renaming_phenotype_list[phenotype]))
 
-fwrite(dt_info,
-	"Tables/table_for_creation_of_prevalence_plots.tsv",
-	sep="\t", quote=FALSE)
-
 dt_info <- fread("Tables/table_for_creation_of_prevalence_plots.tsv") %>%
 	filter(phenotype %in% 
 		c("AFib", "AMD", "AST", "Asth", "BenCervUterNeo", "BenIntNeo",
@@ -52,11 +49,16 @@ dt_info <- fread("Tables/table_for_creation_of_prevalence_plots.tsv") %>%
 		"Stroke", "T2Diab", "TChol", "TG", "Urolith", "VaricVeins", "VTE",
 		"WHRBMI", "AlcCons", "ALT", "HipRep"))
 
+fwrite(dt_info,
+	"Tables/table_for_creation_of_prevalence_plots.tsv",
+	sep="\t", quote=FALSE)
+
 dt_info <- dt_info %>% mutate(hospital = case_when(
 	sampling_strategy == "Hospital/Health center–based" ~ TRUE,
 	sampling_strategy == "Population-based" ~ FALSE,
 	.default = NA)
 )
+
 dt_info_test <- dt_info %>% filter(phenotype != "HipRep")
 # Then, perform the test, split by phenotype
 results <- dt_info_test %>% group_by(phenotype) %>% 
