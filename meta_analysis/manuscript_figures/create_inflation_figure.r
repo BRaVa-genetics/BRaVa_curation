@@ -73,8 +73,8 @@ for (anc in unique(dt$ancestry)) {
     theme(
       plot.title = element_text(size = 16, face = "bold", hjust = 0),
       axis.text.x = element_text(angle = 45, hjust = 1),
-      strip.text = element_text(size = 10)
-    )
+      strip.text = element_text(size = 10),
+      legend.position = "none")
   plots[[anc]] <- p
   ggsave(filename=paste0("Figures/", anc, '_inflation.png'), p, width=10, height=3.5)
 }
@@ -133,10 +133,10 @@ p <- ggplot(dt, aes(x = lambda_type, y = lambda_value)) +
   theme_minimal() + scale_fill_brewer(palette = "Set3") +
   labs(x = "Test type", y = expression(lambda~"value")) +
   theme(
-    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 16, hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1),
-    strip.text = element_text(size = 10)
-  )
+    strip.text = element_text(size = 10),
+    legend.position = "none")
 
 ggsave(p, filename=paste0("Figures/meta_inflation.png"), width=5, height=3.5)
 pdf(width=5, height=3.5, file="Figures/meta_inflation.pdf")
