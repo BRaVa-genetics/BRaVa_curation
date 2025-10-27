@@ -42,7 +42,7 @@ main <- function(args)
 		for (dataset in datasets) {
 			for (anc in ancestries) {
 				file_gene <- grep(
-					paste0(".*cleaned/.*", dataset, "\\..*",  phe, ".*", anc),
+					paste0(".*cleaned/gene/.*", dataset, "\\..*",  phe, ".*", anc),
 					dir(data_dir, full.names=TRUE, recursive=TRUE), value=TRUE)
 				if ((length(file_gene) > 0) & (length(file_gene) <= 3)) {
 					sexes <- c()
