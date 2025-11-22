@@ -175,3 +175,287 @@ if (!download_cleaned) {
         biobank, "/gene/* ", out_data_dir, "/gene/")
     )
 }
+
+
+# For naming files
+biobank <- "uk-biobank"
+last_name <- "baya"
+analysis_name <- "pilot"
+freeze_number <- "JULY23Freeze"
+date <- "20250606"
+method <- "regenie"
+pop <- "EUR"
+phenotype <- "Height"
+sex <- "ALL"
+
+# Next, deal with height for EUR - note that this did not converge in SAIGE
+dx_data_var <- "/nbaya/regenie/data/step2/variant_tests/Height/EUR/regenie_variant_test.EUR.Height.chr*.regenie.gz"
+dx_data_gene <- "/nbaya/regenie/data/step2/group_tests/Height/EUR/*.gz"
+dx_data_annot <- "/nbaya/regenie/data/annotations/v7/*annotations*"
+data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/raw/height")
+out_data_dir <- paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/", biobank, "/cleaned")
+
+system(paste0("mkdir -p ", data_dir, "/gene/june2025/combined"))
+system(paste0("mkdir -p ", data_dir, "/variant/june2025/combined"))
+system(paste0("mkdir -p ", data_dir, "/annotations/june2025/combined"))
+
+if (download) {
+    # Replace with dx download, and we now need to combine across chromosomes
+    # Also, we should flag if a chromosome is missing!
+    system(paste0("dx download ", dx_data_var, " -o ", data_dir , "/variant/june2025/"))
+    system(paste0("dx download ", dx_data_gene, " -o ", data_dir , "/gene/june2025/"))
+    system(paste0("dx download ", dx_data_annot, " -o ", data_dir, "/annotations/june2025/"))
+}
+
+# Now munge
+# Regenie group test results
+class <- "gene"
+dt_list <- list()
+for (file in dir(paste0(data_dir , "/gene/june2025/"),
+    pattern=paste0(".*group.*", pop, ".*gz$"), full.names=TRUE)) {
+    dt_list[[file]] <- fread(file, header=TRUE)
+}
+dt_regenie <- rbindlist(dt_list, fill=TRUE)
+N <- dt_regenie$N[1]
+
+dt_regenie <- dt_regenie %>% filter(
+    TEST %in% c("ADD", "ADD-SKAT", "ADD-SKATO"),
+    !grepl("singleton", ALLELE1))
+dt_regenie <- dt_regenie %>% mutate(
+    Region = gsub("(ENSG[0-9]+)\\..*", "\\1", ID),
+    max_MAF = as.numeric(gsub(".*(0\\.0.*$)", "\\1", ID)),
+    Group = gsub("^([^\\.]*)\\..*", "\\1", ALLELE1)
+    ) %>% mutate(Group = gsub(":", ";", Group))
+dt_regenie <- dt_regenie %>% rename(BETA_Burden=BETA, SE_Burden=SE) %>% 
+    select(-c("ALLELE1", "ALLELE0", "ID", "CHROM", "GENPOS", "EXTRA"))
+
+dt_regenie_burden <- data.table(dt_regenie %>% filter(TEST == "ADD") %>% 
+    mutate(Pvalue_Burden = 10^(-LOG10P)) %>% select(-c("N", "TEST")) %>% 
+    rename(CHISQ_burden=CHISQ, LOG10P_burden=LOG10P))
+dt_regenie_SKAT <- data.table(dt_regenie %>% filter(TEST == "ADD-SKAT") %>%
+    mutate(Pvalue_SKAT = 10^(-LOG10P)) %>%
+    select(-c("A1FREQ", "N", "TEST", "BETA_Burden", "SE_Burden")) %>%
+    rename(CHISQ_SKAT=CHISQ, LOG10P_SKAT=LOG10P))
+dt_regenie_SKATO <- data.table(dt_regenie %>% filter(TEST == "ADD-SKATO") %>%
+    mutate(Pvalue = 10^(-LOG10P)) %>%
+    select(-c("A1FREQ", "N", "TEST", "BETA_Burden", "SE_Burden")))
+
+# Get the naming convention right
+setkeyv(dt_regenie_burden, c("Region", "Group", "max_MAF"))
+setkeyv(dt_regenie_SKAT, c("Region", "Group", "max_MAF"))
+setkeyv(dt_regenie_SKATO, c("Region", "Group", "max_MAF"))
+
+dt_regenie <- merge(merge(dt_regenie_burden, dt_regenie_SKAT), dt_regenie_SKATO)
+dt_regenie <- data.table(dt_regenie)
+setkeyv(dt_regenie, c("Region", "Group", "max_MAF"))
+dt_regenie <- dt_regenie %>% select(Region, Group, max_MAF, Pvalue, Pvalue_Burden, Pvalue_SKAT,
+        BETA_Burden, SE_Burden)
+filename <- determine_cts_filename(
+    biobank,
+    last_name,
+    analysis_name,
+    phenotype,
+    sex,
+    pop,
+    N,
+    class,
+    date,
+    method,
+    freeze_number)
+cat(paste0(data_dir, "/", class, "/june2025/combined/", filename), "\n")
+fwrite(dt_regenie, quote=FALSE, file=paste0(data_dir, "/", class, "/june2025/combined/", filename), sep="\t")
+
+# Now the same for the variant based tests
+class <- "variant"
+dt_list <- list()
+for (file in dir(paste0(data_dir , "/variant/june2025/"),
+    pattern=paste0(pop, ".*gz$"), full.names=TRUE)) {
+    dt_list[[file]] <- fread(file, header=TRUE)
+}
+dt_regenie <- rbindlist(dt_list, fill=TRUE)
+dt_regenie <- dt_regenie %>% rename(
+    CHR=CHROM, POS=GENPOS, MarkerID=ID,
+    Allele1=ALLELE0, Allele2=ALLELE1, AF_Allele2=A1FREQ)
+N_tot <- N
+dt_regenie <- dt_regenie %>% 
+    mutate(
+        AC_Allele2=round(2*N*AF_Allele2),
+        MissingRate=N/N_tot) %>% 
+    mutate(
+        AF_Allele2=AC_Allele2/(2*N_tot),
+        N=N_tot,
+        Tstat=CHISQ/BETA) %>%
+    mutate(var=Tstat^2/CHISQ,
+        `p.value` = 10^(-LOG10P)) %>%
+    select(CHR, POS, MarkerID, Allele1, Allele2,
+        AC_Allele2, AF_Allele2, MissingRate, BETA,
+        SE, Tstat, var, p.value, N)
+
+filename <- determine_cts_filename(
+    biobank,
+    last_name,
+    analysis_name,
+    phenotype,
+    sex,
+    pop,
+    N,
+    class,
+    date,
+    method,
+    freeze_number)
+fwrite(dt_regenie, quote=FALSE, file=paste0(data_dir, "/", class, "/june2025/combined/", filename), sep="\t")
+dt_regenie <- fread(paste0(data_dir, "/", class, "/june2025/combined/", filename))
+# Also need the annotation files as well
+# Read in the annotation file and merge
+dt_list <- list()
+for (file in dir(paste0(data_dir, "/annotations/june2025"),
+        pattern=".txt", full.names=TRUE)) {
+    dt_list[[file]] <- fread(file, header=FALSE)
+}
+dt_annot <- rbindlist(dt_list, fill=TRUE) %>% rename(MarkerID=V1, Region=V2, Group=V3)
+dt_annot <- data.table(dt_annot)
+
+dt_regenie <- data.table(dt_regenie)
+setkeyv(dt_regenie, "MarkerID")
+setkeyv(dt_annot, "MarkerID")
+dt_regenie <- merge(dt_regenie, dt_annot) %>% filter(Group != "non_coding")
+
+compute_burden <- function(thresh) {
+    dt_gene <- dt_regenie %>% filter(
+            pmin(AF_Allele2, 1-AF_Allele2) < thresh,
+            Group != "non_coding") %>% 
+        group_by(Region, Group) %>% mutate(w=dbeta(pmin(AF_Allele2, 1-AF_Allele2), 1, 25)) %>%
+        summarise(
+            BETA_Burden = sum(Tstat*w)/sum(var*w^2),
+            SE_Burden=sqrt(1/sum(var*w^2)),
+            .groups = "drop")
+
+    # Finally determine the union of damaging missense and pLoF, and of the lot
+    dt_gene_dm_pLoF <- dt_regenie %>% filter(pmin(AF_Allele2, 1-AF_Allele2) < thresh,
+            Group %in% c("damaging_missense_or_protein_altering", "pLoF")) %>% 
+        group_by(Region) %>% mutate(w=dbeta(pmin(AF_Allele2, 1-AF_Allele2), 1, 25)) %>%
+        summarise(
+            BETA_Burden = sum(Tstat*w)/sum(var*w^2),
+            SE_Burden=sqrt(1/sum(var*w^2)),
+            .groups = "drop") %>% 
+        mutate(Group = "pLoF;damaging_missense_or_protein_altering")
+
+    dt_gene_any <- dt_regenie %>% filter(pmin(AF_Allele2, 1-AF_Allele2) < thresh,
+            Group %in% c(
+                "pLoF",
+                "damaging_missense_or_protein_altering",
+                "other_missense_or_protein_altering",
+                "synonymous")) %>% 
+        group_by(Region) %>% mutate(w=dbeta(pmin(AF_Allele2, 1-AF_Allele2), 1, 25)) %>%
+        summarise(
+            BETA_Burden = sum(Tstat*w)/sum(var*w^2),
+            SE_Burden=sqrt(1/sum(var*w^2)),
+            .groups = "drop") %>% 
+        mutate(Group = "pLoF;damaging_missense_or_protein_altering;other_missense_or_protein_altering;synonymous")
+    return(rbind(dt_gene, dt_gene_dm_pLoF, dt_gene_any) %>% mutate(max_MAF=thresh))
+}
+
+dt_list <- list()
+for (t in c(0.01, 0.001, 0.0001)) {
+    cat(t, "\n")
+    dt_list[[as.character(t)]] <- compute_burden(t)
+}
+dt_gene <- rbindlist(dt_list)
+class <- "gene"
+filename <- determine_cts_filename(
+    biobank,
+    last_name,
+    analysis_name,
+    phenotype,
+    sex,
+    pop,
+    N,
+    class,
+    date,
+    method,
+    freeze_number)
+fwrite(dt_gene, paste0(data_dir, "/", class, "/june2025/combined/munged.", filename), sep='\t', quote=FALSE)
+
+dt_gene <- fread(paste0(data_dir, "/", class, "/june2025/combined/munged.", filename))
+dt_gene_regenie <- fread(paste0(data_dir, "/", class, "/june2025/combined/", filename))
+
+setkeyv(dt_gene, c("Region", "Group", "max_MAF"))
+setkeyv(dt_gene_regenie, c("Region", "Group", "max_MAF"))
+dt_gene <- merge(dt_gene, dt_gene_regenie %>% select(-c("BETA_Burden", "SE_Burden")))
+fwrite(dt_gene, paste0(data_dir, "/", class, "/june2025/combined/", filename))
+system(paste("rm", paste0(data_dir, "/", class, "/june2025/combined/munged.", filename)))
+
+# Now, we need to rename the phenotypes according to the correct conventions
+system(paste0("Rscript munge_results_files_Group_names.r",
+    " --folder ", data_dir, "/gene/june2025/combined",
+    " --out_folder ", out_data_dir, "/gene",
+    " --write")
+)
+
+system(paste0("Rscript munge_results_files_Group_names.r",
+    " --folder ", data_dir, "/variant/june2025/combined",
+    " --out_folder ", out_data_dir, "/variant",
+    " --type variant",
+    " --write")
+)
+
+# pdf(width=10, height=3, file="maf.pdf")
+# p <- ggplot(dt_gene, aes(x=BETA_Burden.x, y=BETA_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~max_MAF) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=SE_Burden.x, y=SE_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~max_MAF) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=(BETA_Burden.x/SE_Burden.x), y=(BETA_Burden.y/SE_Burden.y))) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~max_MAF) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# dev.off()
+
+# pdf(width=20, height=10, file="group.pdf")
+# p <- ggplot(dt_gene, aes(x=BETA_Burden.x, y=BETA_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~Group) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=SE_Burden.x, y=SE_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~Group) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=(BETA_Burden.x/SE_Burden.x), y=(BETA_Burden.y/SE_Burden.y))) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~Group) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# dev.off()
+
+# dt_gene <- dt_gene %>% filter(Pvalue_Burden < 0.01)
+# pdf(width=10, height=3, file="maf_p.pdf")
+# p <- ggplot(dt_gene, aes(x=BETA_Burden.x, y=BETA_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~max_MAF) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=SE_Burden.x, y=SE_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~max_MAF) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=(BETA_Burden.x/SE_Burden.x), y=(BETA_Burden.y/SE_Burden.y))) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~max_MAF) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# dev.off()
+
+# pdf(width=20, height=10, file="group_p.pdf")
+# p <- ggplot(dt_gene, aes(x=BETA_Burden.x, y=BETA_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~Group) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=SE_Burden.x, y=SE_Burden.y)) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~Group) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# p <- ggplot(dt_gene, aes(x=(BETA_Burden.x/SE_Burden.x), y=(BETA_Burden.y/SE_Burden.y))) + geom_hex(bins = 200) +
+#   scale_fill_viridis_c(option = "plasma") + theme_minimal() + facet_wrap(~Group) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed")
+# print(p)
+# dev.off()

@@ -509,7 +509,7 @@ file_check_information <- list(
 		`CACS` = c("CACS", "Coronary artery calcium score", "Coronary_artery_calcium_score"),
 		`CK` = c("CK", "Creatine kinase (CK)", "Creatine_kinase_(CK)"),
 		`HDLC` = c("HDLC", "HDL"),
-		`Height` = c("Height"),
+		`Height` = c("Height", "height"),
 		`LDLC` = c("LDLC", "LDL"),
 		`TChol` = c("TChol", "Total cholesterol", "Total_cholesterol"),
 		`TG` = c("TG", "Triglycerides"),
