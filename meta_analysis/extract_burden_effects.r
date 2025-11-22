@@ -71,7 +71,7 @@ get_burden_and_SE <- function(
 # (either 0.001, 1e-4, and any combination of pLoF and damaging missense). Then, loop over everything to 
 # create the required plots.
 
-# Oct 25 freeze on BMRC
+# Nov 25 freeze on BMRC
 meta_results <- dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100", pattern="tsv.gz", full.names=TRUE)
 
 Groups_to_plot <- c(

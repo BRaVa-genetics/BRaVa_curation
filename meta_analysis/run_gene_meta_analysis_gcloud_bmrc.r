@@ -245,7 +245,7 @@ parser$add_argument("--out_dir", default="/well/lindgren/dpalmer/BRaVa_meta-anal
 parser$add_argument("--inflation_file", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz",
 	required=FALSE, help="Inflation file")
 parser$add_argument("--phenotypeID", required=FALSE, default=NULL,
-	help="The phenotype ID to run meta-analysis on. Note: thus exactly must match the naming in input folder.")
+	help="The phenotype ID to run meta-analysis on. Note: must match the naming in input folder.")
 args <- parser$parse_args()
 
 main(args)

@@ -11,6 +11,12 @@ source("../meta_analysis_utils.r")
 # scp qen698@cluster2.bmrc.ox.ac.uk:/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_data.tsv.gz ~/Repositories/BRaVa_curation/data/meta_analysis/meta_results/
 
 plot_unique <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_data.tsv.gz")
+# Determine the counts of binary and continuous traits in the results:
+files <- dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100", full.names=TRUE)
+files <- grep("cutoff.tsv.gz", files, value=TRUE)
+phenos <- unique(gsub(".*/([A-Za-z0-9]+)_.*", "\\1", files))
+n_binary <- sum(phenos %in% phenotype_class$binary)
+n_cts <- sum(phenos %in% phenotype_class$continuous)
 # Ensure that sex specific traits and 'ALL' traits are restricted to those,
 # otherwise CCPM will have multiple shots at hitting a significant association
 
@@ -25,7 +31,11 @@ for (cc in c(TRUE, FALSE)) {
 			scale_y_continuous(labels = scales::comma) +
 			scale_fill_manual(values=pop_colors) + 
 			labs(x = NULL, y = "Number of unique\n(gene, trait) associations", fill = "Genetic\nancestry",
-				title=ifelse(cc, "Binary traits (N=32)", "Continuous traits (N=10)"))
+				title=ifelse(cc,
+					paste0("Binary traits (N=", n_binary, ")"),
+					paste0("Continuous traits (N=", n_cts, ")")
+					)
+				)
 	print(p)
 	dev.off()
 }
