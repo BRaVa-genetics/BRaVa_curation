@@ -14,7 +14,7 @@ main <- function(args)
 	source("meta_analysis_utils.r")
 	source("../phenotypes/BRaVa_phenotypes_utils.r")
 
-	files <- grep(".*cleaned/*\\.gene\\..*",
+	files <- grep(".*cleaned/.*\\.gene\\..*",
 		dir(data_dir, full.names=TRUE, recursive=TRUE), value=TRUE)
 	dt <- rbindlist(lapply(files, extract_file_info), fill=TRUE)
 	dt <- dt %>% mutate(dataset = gsub(".*/", "", dataset), file = files)
