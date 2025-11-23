@@ -212,52 +212,111 @@ for (i in 1:length(file_root)) {
 	}
 }
 
-file_root <- c("meta_analysis", "AFR", "AMR", "EAS", "EUR", "SAS", "non_EUR")
-
+# Height removed
 for (i in 1:length(file_root)) {
 	meta_list <- fread(
 		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
 			file_root[i], "_figure_4.tsv.gz"))
+	meta_list <- meta_list %>% 
+		mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype])) %>%
+		filter(phenotype != "Height")
 	# Create the Burden, SKAT, and SKAT-O versions
-	# Do the same thing, but split by case-control vs cts (way more power for cts).
-	for (cc in c(TRUE, FALSE)) {
-		cat(ifelse(cc, "case control\n", "continuous\n"))
-		meta_list_tmp <- meta_list %>% filter(case_control == cc)
-		for (phe in unique(meta_list_tmp$phenotype)) {
-			cat(paste0(phe, "..."))
-			meta_list_tmp_pheno <- meta_list_tmp %>% filter(phenotype == phe)
-			p <- make_manhattan_plot(meta_list_tmp_pheno$chromosome_name,
-				meta_list_tmp_pheno$start_position,
-				meta_list_tmp_pheno$Pvalue,
-				threshold=1000, significance_T = significance_T1,
-				label=meta_list_tmp_pheno$external_gene_name, 
-				colour_1 = "#6583E6",
-				colour_2 = "#384980",
-				loglog=TRUE)
+	cc <- FALSE
+	meta_list_tmp <- meta_list %>% filter(case_control == cc)
+	p <- make_manhattan_plot(meta_list_tmp$chromosome_name,
+		meta_list_tmp$start_position,
+		meta_list_tmp$Pvalue,
+		threshold=1000, significance_T = significance_T1,
+		label=meta_list_tmp$external_gene_name, 
+		colour_1 = "#6583E6",
+		colour_2 = "#384980",
+		loglog=TRUE)
 
-			p$p <- p$p + geom_hline(yintercept=-log10(significance_T2), color='black', linetype='dashed')
-			threshold <- ifelse(cc, 10, 50)
+	p$p <- p$p + geom_hline(yintercept=-log10(significance_T2), color='black', linetype='dashed')
+	threshold <- ifelse(cc, 10, 50)
 
-			if (nrow(p$dt %>% filter(y > transform_y(threshold))) < 20) {
-				threshold <- 10
-			}
-
-			p$p <- p$p + geom_label_repel(
-				data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
-					filter(y == max(y))) %>% ungroup(),
-				size = 3, aes(label=labels),
-				color='grey30', box.padding = 0.2, force = 0.3,
-				label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-				min.segment.length=0)
-			width <- 230
-			height <- 100
-			scaling <- 1
-			file <- paste0(file_root[i], "_", phe)
-			ggsave(paste0("Figures/", file, '_manhattan.png'), p$p, width=width*scaling,
-				height=height*scaling, units='mm')
-		}
+	if (nrow(p$dt %>% filter(y > transform_y(threshold))) < 20) {
+		threshold <- 10
 	}
+
+	p$p <- p$p + geom_label_repel(
+		data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
+			filter(y == max(y))) %>% ungroup(),
+		size = 3, aes(label=labels),
+		color='grey30', box.padding = 0.2, force = 0.3,
+		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+		min.segment.length=0)
+	width <- 230
+	height <- 100
+	scaling <- 1
+	file <- paste0(file_root[i], "_",
+		ifelse(cc, "unique_case_control", "unique_cts"))
+	ggsave(paste0("Figures/", file, '_no_height.pdf'), p$p, width=width*scaling,
+		height=height*scaling, units='mm')
+	ggsave(paste0("Figures/", file, '.png'), p$p, width=width*scaling,
+		height=height*scaling, units='mm')
+	width <- 150
+	p <- make_gene_manhattan_category_plot(meta_list_tmp, buffer=1000000000,
+		scaling=scaling, width=width, height=height, save_figure=FALSE,
+		significance_T1=significance_T1, significance_T2=significance_T2, loglog=loglog)
+	p$p <- p$p + geom_label_repel(
+		data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
+			filter(y == max(y))) %>% ungroup(),
+		size = 2, aes(label=labels),
+		color='grey30', box.padding = 0.2, force = 0.3,
+		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+		min.segment.length=0)
+	ggsave(filename=paste0("Figures/", file, '_categories.pdf'), p$p, width=width*scaling, height=height*scaling, units='mm')
+	ggsave(filename=paste0("Figures/", file, '_categories.png'), p$p, width=width*scaling, height=height*scaling, units='mm')
+
 }
+
+# file_root <- c("meta_analysis", "AFR", "AMR", "EAS", "EUR", "SAS", "non_EUR")
+# 
+# for (i in 1:length(file_root)) {
+# 	meta_list <- fread(
+# 		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
+# 			file_root[i], "_figure_4.tsv.gz"))
+# 	# Create the Burden, SKAT, and SKAT-O versions
+# 	# Do the same thing, but split by case-control vs cts (way more power for cts).
+# 	for (cc in c(TRUE, FALSE)) {
+# 		cat(ifelse(cc, "case control\n", "continuous\n"))
+# 		meta_list_tmp <- meta_list %>% filter(case_control == cc)
+# 		for (phe in unique(meta_list_tmp$phenotype)) {
+# 			cat(paste0(phe, "..."))
+# 			meta_list_tmp_pheno <- meta_list_tmp %>% filter(phenotype == phe)
+# 			p <- make_manhattan_plot(meta_list_tmp_pheno$chromosome_name,
+# 				meta_list_tmp_pheno$start_position,
+# 				meta_list_tmp_pheno$Pvalue,
+# 				threshold=1000, significance_T = significance_T1,
+# 				label=meta_list_tmp_pheno$external_gene_name, 
+# 				colour_1 = "#6583E6",
+# 				colour_2 = "#384980",
+# 				loglog=TRUE)
+
+# 			p$p <- p$p + geom_hline(yintercept=-log10(significance_T2), color='black', linetype='dashed')
+# 			threshold <- ifelse(cc, 10, 50)
+
+# 			if (nrow(p$dt %>% filter(y > transform_y(threshold))) < 20) {
+# 				threshold <- 10
+# 			}
+
+# 			p$p <- p$p + geom_label_repel(
+# 				data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
+# 					filter(y == max(y))) %>% ungroup(),
+# 				size = 3, aes(label=labels),
+# 				color='grey30', box.padding = 0.2, force = 0.3,
+# 				label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+# 				min.segment.length=0)
+# 			width <- 230
+# 			height <- 100
+# 			scaling <- 1
+# 			file <- paste0(file_root[i], "_", phe)
+# 			ggsave(paste0("Figures/", file, '_manhattan.png'), p$p, width=width*scaling,
+# 				height=height*scaling, units='mm')
+# 		}
+# 	}
+# }
 
 # # This is for each phenotype
 # for (i in 1:length(file_root)) {

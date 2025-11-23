@@ -121,7 +121,7 @@ dt_gene_hits_unique <- dt_gene_hits_all %>%
 	) %>% group_by(dataset, ancestry, case_control) %>% 
 	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456")))
 
-dt_gene_hits_all_unique_no_height <- dt_gene_hits_unique %>% 
+dt_gene_hits_unique_no_height <- dt_gene_hits_unique %>% 
 	filter(phenotype != "Height_ALL")%>% 
 	summarise(count = length(unique(paste(Region, phenotype))))
 dt_gene_hits_unique <- dt_gene_hits_unique %>%
@@ -135,7 +135,7 @@ plot_unique$dataset <- factor(plot_unique$dataset,
 	levels = c(sort(setdiff(unique(plot_unique$dataset), "Meta")), "Meta"))
 
 plot_unique_no_height <- rbind(
-	dt_gene_hits_unique %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset])),
+	dt_gene_hits_unique_no_height %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset])),
 	meta_list_unique %>% mutate(ancestry = "Meta", dataset = "Meta")
 	)
 plot_unique_no_height$dataset <- factor(plot_unique_no_height$dataset,
