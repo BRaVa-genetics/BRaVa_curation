@@ -142,4 +142,4 @@ plot_unique_no_height$dataset <- factor(plot_unique_no_height$dataset,
 	levels = c(sort(setdiff(unique(plot_unique_no_height$dataset), "Meta")), "Meta"))
 
 fwrite(plot_unique, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_data.tsv.gz", sep='\t', quote=FALSE)
-fwrite(plot_unique, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_no_height_data.tsv.gz", sep='\t', quote=FALSE)
+fwrite(plot_unique_no_height, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_no_height_data.tsv.gz", sep='\t', quote=FALSE)
