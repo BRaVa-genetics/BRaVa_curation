@@ -77,91 +77,103 @@ make_euler_plot <- function(weights, color_map = NULL, title = NULL) {
        main = title)
 }
 
-# Output Euler and UpSet: Class
-meta_class <- meta %>%
-  filter(ancestry == "Meta") %>%
-  distinct(Region, phenotype, class) %>%
-  mutate(id = paste(Region, phenotype, sep = "_"))
+create_all_plots <- function(dt_meta, file_out_append="") {
+  # Output Euler and UpSet: Class
+  meta_class <- dt_meta %>%
+    filter(ancestry == "Meta") %>%
+    distinct(Region, phenotype, class) %>%
+    mutate(id = paste(Region, phenotype, sep = "_"))
 
-venn_data_class <- split(meta_class$id, meta_class$class)
-weights_class <- get_euler_weights(venn_data_class)
+  venn_data_class <- split(meta_class$id, meta_class$class)
+  weights_class <- get_euler_weights(venn_data_class)
 
-pdf("Figures/upset_plot_class.pdf", width = 2.5, height = 3.5)
-print(make_upset_plot(meta_class, "class", color_map = colors_class))
-dev.off()
-
-pdf("Figures/euler_plot_class.pdf", width = 1.5, height = 1.5)
-print(make_euler_plot(weights_class, color_map = colors_class))
-dev.off()
-
-# Output Euler and UpSet: Variant Group
-meta_group <- meta %>%
-  filter(ancestry == "Meta") %>%
-  distinct(Region, phenotype, Group) %>%
-  mutate(id = paste(Region, phenotype, sep = "_"))
-
-venn_data_group <- split(meta_group$id, meta_group$Group)
-weights_group <- get_euler_weights(venn_data_group)
-
-pdf("Figures/upset_plot_group.pdf", width = 2.5, height = 3.5)
-print(make_upset_plot(meta_group, "Group", color_map = colors))
-dev.off()
-
-pdf("Figures/euler_plot_group.pdf", width = 1.5, height = 1.5)
-print(make_euler_plot(weights_group, color_map = colors))
-dev.off()
-
-# Ancestry Subsets (Meta/EUR/non-EUR and UKB/AoU)
-meta_venn <- meta %>%
-  filter(ancestry %in% c("Meta", "EUR", "non-EUR", "UKB and AoU")) %>%
-  distinct(Region, phenotype, ancestry) %>%
-  mutate(id = paste(Region, phenotype, sep = "_"))
-
-list_pops <- list(
-  superpops = c("Meta", "EUR", "non-EUR"),
-  ukb_aou = c("Meta", "UKB and AoU")
-)
-
-widths <- c(2.5, 2)
-i <- 1
-
-for (subset_name in names(list_pops)) {
-  pops <- list_pops[[subset_name]]
-  subset_df <- meta_venn %>% filter(ancestry %in% pops)
-  venn_list <- split(subset_df$id, subset_df$ancestry)
-  weights <- get_euler_weights(venn_list)
-
-  # UpSet
-  p <- make_upset_plot(subset_df, "ancestry", color_map = pop_colors)
-  pdf(paste0("Figures/upset_plot_", subset_name, ".pdf"), width = widths[i], height = 3.5)
-  print(p)
+  pdf(paste0("Figures/upset_plot_class", file_out_append, ".pdf"),
+    width = 2.5, height = 3.5)
+  print(make_upset_plot(meta_class, "class", color_map = colors_class))
   dev.off()
+
+  pdf(paste0("Figures/euler_plot_class", file_out_append, ".pdf"),
+    width = 1.5, height = 1.5)
+  print(make_euler_plot(weights_class, color_map = colors_class))
+  dev.off()
+
+  # Output Euler and UpSet: Variant Group
+  meta_group <- dt_meta %>%
+    filter(ancestry == "Meta") %>%
+    distinct(Region, phenotype, Group) %>%
+    mutate(id = paste(Region, phenotype, sep = "_"))
+
+  venn_data_group <- split(meta_group$id, meta_group$Group)
+  weights_group <- get_euler_weights(venn_data_group)
+
+  pdf(paste0("Figures/upset_plot_group", file_out_append, ".pdf"),
+    width = 2.5, height = 3.5)
+  print(make_upset_plot(meta_group, "Group", color_map = colors))
+  dev.off()
+
+  pdf(paste0("Figures/euler_plot_group", file_out_append, ".pdf"),
+    width = 1.5, height = 1.5)
+  print(make_euler_plot(weights_group, color_map = colors))
+  dev.off()
+
+  # Ancestry Subsets (Meta/EUR/non-EUR and UKB/AoU)
+  meta_venn <- dt_meta %>%
+    filter(ancestry %in% c("Meta", "EUR", "non-EUR", "UKB and AoU")) %>%
+    distinct(Region, phenotype, ancestry) %>%
+    mutate(id = paste(Region, phenotype, sep = "_"))
+
+  list_pops <- list(
+    superpops = c("Meta", "EUR", "non-EUR"),
+    ukb_aou = c("Meta", "UKB and AoU")
+  )
+
+  widths <- c(2.5, 2)
+  i <- 1
+
+  for (subset_name in names(list_pops)) {
+    pops <- list_pops[[subset_name]]
+    subset_df <- meta_venn %>% filter(ancestry %in% pops)
+    venn_list <- split(subset_df$id, subset_df$ancestry)
+    weights <- get_euler_weights(venn_list)
+
+    # UpSet
+    p <- make_upset_plot(subset_df, "ancestry", color_map = pop_colors)
+    pdf(paste0("Figures/upset_plot_", subset_name, file_out_append, ".pdf"),
+      width = widths[i], height = 3.5)
+    print(p)
+    dev.off()
+
+    # Euler
+    pdf(paste0("Figures/euler_plot_", subset_name, file_out_append, ".pdf"),
+      width = 1.5, height = 1.5)
+    print(make_euler_plot(weights, color_map = pop_colors))
+    dev.off()
+
+    i <- i + 1
+  }
+
+  # Final: All Ancestries
+  meta_all <- dt_meta %>%
+    filter(ancestry %in% c("Meta", "AFR", "AMR", "EAS", "EUR", "SAS")) %>%
+    distinct(Region, phenotype, ancestry) %>%
+    mutate(id = paste(Region, phenotype, sep = "_"))
+
+  venn_data_all <- split(meta_all$id, meta_all$ancestry)
+  weights_all <- get_euler_weights(venn_data_all)
 
   # Euler
-  pdf(paste0("Figures/euler_plot_", subset_name, ".pdf"), width = 1.5, height = 1.5)
-  print(make_euler_plot(weights, color_map = pop_colors))
+  pdf(paste0("Figures/euler_plot_all_ancestries", file_out_append, ".pdf"),
+    width = 2.5, height = 2.5)
+  print(make_euler_plot(weights_all, color_map = pop_colors))
   dev.off()
 
-  i <- i + 1
+  # UpSet
+  p_all <- make_upset_plot(meta_all, "ancestry", color_map = pop_colors)
+  pdf(paste0("Figures/upset_plot", file_out_append, ".pdf"),
+    width = 6, height = 3.5)
+  print(p_all)
+  dev.off()
 }
 
-# Final: All Ancestries
-meta_all <- meta %>%
-  filter(ancestry %in% c("Meta", "AFR", "AMR", "EAS", "EUR", "SAS")) %>%
-  distinct(Region, phenotype, ancestry) %>%
-  mutate(id = paste(Region, phenotype, sep = "_"))
-
-venn_data_all <- split(meta_all$id, meta_all$ancestry)
-weights_all <- get_euler_weights(venn_data_all)
-
-# Euler
-pdf("Figures/euler_plot_all_ancestries.pdf", width = 2.5, height = 2.5)
-print(make_euler_plot(weights_all, color_map = pop_colors))
-dev.off()
-
-# UpSet
-p_all <- make_upset_plot(meta_all, "ancestry", color_map = pop_colors)
-pdf("Figures/upset_plot.pdf", width = 6, height = 3.5)
-print(p_all)
-dev.off()
-
+create_all_plots(meta)
+create_all_plots(meta %>% filter(phenotype != "Height"), file_out_append="_no_height")
