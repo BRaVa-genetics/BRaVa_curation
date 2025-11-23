@@ -105,6 +105,9 @@ fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_asso
 meta_list_unique <- meta_list %>% filter(hit) %>% group_by(case_control) %>% 
 	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
 	summarise(count = length(unique(paste(Region, phenotype))))
+meta_list_unique_no_height <- meta_list %>% filter(hit, phenotype != "Height_ALL") %>% group_by(case_control) %>% 
+	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
+	summarise(count = length(unique(paste(Region, phenotype))))
 
 # Ensure that the phenotypes going through to the plot have been meta-analysed/
 dt_gene_hits <- dt_gene_hits_all  %>% 
@@ -122,7 +125,7 @@ dt_gene_hits_unique <- dt_gene_hits_all %>%
 	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456")))
 
 dt_gene_hits_unique_no_height <- dt_gene_hits_unique %>% 
-	filter(phenotype != "Height_ALL")%>% 
+	filter(phenotype != "Height")%>% 
 	summarise(count = length(unique(paste(Region, phenotype))))
 dt_gene_hits_unique <- dt_gene_hits_unique %>%
 	summarise(count = length(unique(paste(Region, phenotype))))
@@ -136,7 +139,7 @@ plot_unique$dataset <- factor(plot_unique$dataset,
 
 plot_unique_no_height <- rbind(
 	dt_gene_hits_unique_no_height %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset])),
-	meta_list_unique %>% mutate(ancestry = "Meta", dataset = "Meta")
+	meta_list_unique_no_height %>% mutate(ancestry = "Meta", dataset = "Meta")
 	)
 plot_unique_no_height$dataset <- factor(plot_unique_no_height$dataset,
 	levels = c(sort(setdiff(unique(plot_unique_no_height$dataset), "Meta")), "Meta"))

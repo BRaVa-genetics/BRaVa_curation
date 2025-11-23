@@ -253,7 +253,7 @@ for (i in 1:length(file_root)) {
 		ifelse(cc, "unique_case_control", "unique_cts"))
 	ggsave(paste0("Figures/", file, '_no_height.pdf'), p$p, width=width*scaling,
 		height=height*scaling, units='mm')
-	ggsave(paste0("Figures/", file, '.png'), p$p, width=width*scaling,
+	ggsave(paste0("Figures/", file, '_no_height.png'), p$p, width=width*scaling,
 		height=height*scaling, units='mm')
 	width <- 150
 	p <- make_gene_manhattan_category_plot(meta_list_tmp, buffer=1000000000,
