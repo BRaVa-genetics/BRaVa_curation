@@ -45,21 +45,16 @@ n_cts <- n_cts - 1
 # Ensure that sex specific traits and 'ALL' traits are restricted to those,
 # otherwise CCPM will have multiple shots at hitting a significant association
 
-cc <- FALSE
-pdf(width=ifelse(cc, 5, 3.5), height=4, file="Figures/cts_unique_hits_no_height_count.pdf"))
+pdf(width=3.5, height=4, file="Figures/cts_unique_hits_no_height_count.pdf")
 plot_unique <- plot_unique %>%
   	mutate(dataset = factor(dataset, levels = c(setdiff(sort(unique(dataset)), "Meta"), "Meta")))
-p <- ggplot(plot_unique %>% filter(case_control == !!cc),
+p <- ggplot(plot_unique %>% filter(!case_control),
 		aes(x=dataset, y=count, fill=ancestry)) + 
 		geom_bar(stat= "identity", position = "dodge") + theme_minimal() +
 		theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
 		scale_y_continuous(labels = scales::comma) +
 		scale_fill_manual(values=pop_colors) + 
 		labs(x = NULL, y = "Number of unique\n(gene, trait) associations", fill = "Genetic\nancestry",
-			title=ifelse(cc,
-				paste0("Binary traits (N=", n_binary, ")"),
-				paste0("Continuous traits (N=", n_cts, ")")
-			)
-		)
+			title=paste0("Continuous traits (N=", n_cts, ")"))
 print(p)
 dev.off()
