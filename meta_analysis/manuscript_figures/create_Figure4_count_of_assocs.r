@@ -62,6 +62,11 @@ dt_inflation <- rbind(dt_inflation, data.table(
 	dataset = c("egcut", "mgbb"),
 	ancestry = c("EUR", "AMR"),
 	sex = c("ALL", "ALL")))
+dt_inflation <- setdiff(dt_inflation, data.table(
+	phenotype = c("Height"),
+	dataset = c("uk-biobank"),
+	ancestry = c("EUR"),
+	sex = c("ALL")))
 
 # Remove those (phenotype, biobank, sex) files from the meta-analysis
 setkeyv(dt_inflation, c("phenotype", "dataset", "ancestry", "sex"))
@@ -114,7 +119,12 @@ dt_gene_hits_unique <- dt_gene_hits_all %>%
 		"pLoF;damaging_missense_or_protein_altering",
 		"damaging_missense_or_protein_altering")
 	) %>% group_by(dataset, ancestry, case_control) %>% 
-	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>% 
+	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456")))
+
+dt_gene_hits_all_unique_no_height <- dt_gene_hits_unique %>% 
+	filter(phenotype != "Height_ALL")%>% 
+	summarise(count = length(unique(paste(Region, phenotype))))
+dt_gene_hits_unique <- dt_gene_hits_unique %>%
 	summarise(count = length(unique(paste(Region, phenotype))))
 
 plot_unique <- rbind(
@@ -123,4 +133,13 @@ plot_unique <- rbind(
 	)
 plot_unique$dataset <- factor(plot_unique$dataset,
 	levels = c(sort(setdiff(unique(plot_unique$dataset), "Meta")), "Meta"))
+
+plot_unique_no_height <- rbind(
+	dt_gene_hits_unique %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset])),
+	meta_list_unique %>% mutate(ancestry = "Meta", dataset = "Meta")
+	)
+plot_unique_no_height$dataset <- factor(plot_unique_no_height$dataset,
+	levels = c(sort(setdiff(unique(plot_unique_no_height$dataset), "Meta")), "Meta"))
+
 fwrite(plot_unique, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_data.tsv.gz", sep='\t', quote=FALSE)
+fwrite(plot_unique, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_no_height_data.tsv.gz", sep='\t', quote=FALSE)
