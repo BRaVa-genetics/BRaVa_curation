@@ -20,7 +20,7 @@ file_info <- file_info %>% filter(phenotype %in%
 	"HTN", "IBD", "IFHern", "ILDSarc", "LDLC", "MatHem", "NonRheuValv",
 	"PAD", "Pancreat", "PeptUlcer", "Psori", "RheumArth", "RheumHeaDis",
 	"Stroke", "T2Diab", "TChol", "TG", "Urolith", "VaricVeins", "VTE",
-	"WHRBMI", "AlcCons", "ALT", "HipRep"))
+	"WHRBMI", "AlcCons", "ALT", "HipRep", "CRP", "Height"))
 
 renaming_phenotype_list[unique(file_info$phenotype)]
 
@@ -98,3 +98,23 @@ p <- ggplot(n_phenotypes_summary %>%
 print(p)
 
 dev.off()
+
+ 
+n_phenotypes_summary_no_height <- file_info %>% filter(type == "gene", phenotype != "Height", (is.na(n) & ((n_cases > 100) | (n_controls > 100))) | !is.na(n)) %>% 
+	group_by(dataset, phenotype) %>% slice(1) %>% group_by(dataset) %>% summarise(count = n(), .groups = 'drop')
+
+pdf(width = 2.5, height = 3, file = "Figures/phenotype_counts_no_height.pdf")
+
+p <- ggplot(n_phenotypes_summary_no_height %>% 
+	mutate(
+		dataset = unlist(renaming_plot_biobank_list[dataset])),
+		aes(x=dataset, y=count, fill=dataset)) + 
+	theme_minimal() + geom_bar(color = "darkgrey", stat="identity", position="dodge", width=0.7, show.legend = FALSE) + 
+	labs(x = NULL, y = "Number of phenotypes") + 
+	theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+	scale_fill_brewer(palette = "Set3")
+
+print(p)
+
+dev.off()
+
