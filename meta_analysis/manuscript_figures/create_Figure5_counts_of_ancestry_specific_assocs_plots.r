@@ -176,4 +176,4 @@ create_all_plots <- function(dt_meta, file_out_append="") {
 }
 
 create_all_plots(meta)
-create_all_plots(meta %>% filter(phenotype != "Height"), file_out_append="_no_height")
+create_all_plots(meta %>% filter(phenotype != "Height_ALL"), file_out_append="_no_height")
