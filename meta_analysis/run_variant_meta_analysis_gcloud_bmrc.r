@@ -63,9 +63,9 @@ main <- function(args)
 		sex = c("ALL", "ALL"))
 	) %>% rename(phenotypeID = phenotype, biobank = dataset, pop = ancestry)
 	dt_inflation <- setdiff(dt_inflation, data.table(
-	phenotype = c("Height"),
-	dataset = c("uk-biobank"),
-	ancestry = c("EUR"),
+	phenotypeID = c("Height"),
+	biobank = c("uk-biobank"),
+	pop = c("EUR"),
 	sex = c("ALL")))
 
 	# Remove those (phenotype, biobank, sex) files from the meta-analysis
