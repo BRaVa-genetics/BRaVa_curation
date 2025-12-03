@@ -336,6 +336,8 @@ for (anc in unique(meta_list$ancestry)) {
 			ifelse(cc, "variant_case_control", "variant_cts"))
 		ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
 			height=height*scaling, units='mm')
+		ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
+			height=height*scaling, units='mm')
 		print("done creating!")
 
 		width <- 150
@@ -363,6 +365,9 @@ for (anc in unique(meta_list$ancestry)) {
 
 		ggsave(
 			filename=paste0("Figures/", file, '_', anc, '_categories.pdf'), p$p,
+			width=width*scaling, height=height*scaling, units='mm')
+		ggsave(
+			filename=paste0("Figures/", file, '_', anc, '_categories.png'), p$p,
 			width=width*scaling, height=height*scaling, units='mm')
 	}
 }
