@@ -293,83 +293,159 @@ meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/m
 	mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype])) %>% 
 	mutate(case_control = ifelse(type == "binary", TRUE, FALSE))
 
+# # Do the same thing, but split by case-control vs cts (way more power for cts).
+# for (anc in unique(meta_list$ancestry)) {
+# 	for (cc in c(TRUE, FALSE)) {
+# 		cat(ifelse(cc, "case control\n", "continuous\n"))
+# 		meta_list_tmp <- meta_list %>% filter(case_control == cc, ancestry == anc)
+# 		p <- make_manhattan_plot(meta_list_tmp$chr,
+# 			meta_list_tmp$pos,
+# 			-meta_list_tmp$`P-value`,
+# 			threshold=1000,
+# 			significance_T = significance_T,
+# 			label=NULL, 
+# 			colour_1 = "#6583E6",
+# 			colour_2 = "#384980",
+# 			loglog=!cc,
+# 			log_p_vals=TRUE)
+
+# 		dt_label <- annotate_with_gene_names(meta_list_tmp %>%
+# 			dplyr::rename(contig = chr, position=pos, pval=`P-value`)) %>% 
+# 			mutate(y=-pval)
+# 		if (!cc) {
+# 			dt_label$y <- loglog_trans(dt_label$y)
+# 		}
+# 		dt_label <- data.table(dt_label %>% group_by(ID) %>% 
+# 			slice_min(pval, with_ties = FALSE) %>% ungroup())
+
+# 		p$dt <- data.table(p$dt)
+# 		setkeyv(p$dt, c("contig", "position", "y"))
+# 		setkeyv(dt_label, c("contig", "position", "y"))
+# 		dt_label <- merge(p$dt, dt_label)
+
+# 		p$p <- p$p + geom_label_repel(
+# 			data = dt_label,
+# 			size = 3, aes(label=external_gene_name),
+# 			color='grey30', box.padding = 0.2, force = 0.3,
+# 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+# 			min.segment.length=0)
+# 		width <- 230
+# 		height <- 100
+# 		scaling <- 1
+# 		file <- paste0("meta_analysis", "_",
+# 			ifelse(cc, "variant_case_control", "variant_cts"))
+# 		ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
+# 			height=height*scaling, units='mm')
+# 		ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
+# 			height=height*scaling, units='mm')
+# 		print("done creating!")
+
+# 		width <- 150
+# 		p <- make_gene_manhattan_category_plot(
+# 			meta_list_tmp %>% dplyr::rename(
+# 				position = pos, Pvalue=`P-value`, chromosome_name=chr),
+# 			buffer=1000000000,
+# 			scaling=scaling, width=width, height=height, save_figure=FALSE,
+# 			significance_T=significance_T, loglog=!cc)
+
+# 		# Could consider including genes
+# 		dt_label <- annotate_with_gene_names(p$dt) %>% 
+# 			mutate(y=-pval) %>% dplyr::select(-pval)
+# 		p$dt <- data.table(p$dt)
+# 		setkeyv(p$dt, intersect(names(p$dt), names(dt_label)))
+# 		setkeyv(dt_label, intersect(names(p$dt), names(dt_label)))
+# 		dt_label <- merge(p$dt, dt_label)
+
+# 		p$p <- p$p + geom_label_repel(
+# 			data = dt_label,
+# 			size = 3, aes(label=external_gene_name),
+# 			color='grey30', box.padding = 0.2, force = 0.3,
+# 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+# 			min.segment.length=0)
+
+# 		ggsave(
+# 			filename=paste0("Figures/", file, '_', anc, '_categories.pdf'), p$p,
+# 			width=width*scaling, height=height*scaling, units='mm')
+# 		ggsave(
+# 			filename=paste0("Figures/", file, '_', anc, '_categories.png'), p$p,
+# 			width=width*scaling, height=height*scaling, units='mm')
+# 	}
+# }
+
+dt <- dt %>% filter(phenotype != "Height")
+
 # Do the same thing, but split by case-control vs cts (way more power for cts).
 for (anc in unique(meta_list$ancestry)) {
-	for (cc in c(TRUE, FALSE)) {
-		cat(ifelse(cc, "case control\n", "continuous\n"))
-		meta_list_tmp <- meta_list %>% filter(case_control == cc, ancestry == anc)
-		p <- make_manhattan_plot(meta_list_tmp$chr,
-			meta_list_tmp$pos,
-			-meta_list_tmp$`P-value`,
-			threshold=1000,
-			significance_T = significance_T,
-			label=NULL, 
-			colour_1 = "#6583E6",
-			colour_2 = "#384980",
-			loglog=!cc,
-			log_p_vals=TRUE)
+	meta_list_tmp <- meta_list %>% filter(case_control == FALSE, ancestry == anc)
+	p <- make_manhattan_plot(meta_list_tmp$chr,
+		meta_list_tmp$pos,
+		-meta_list_tmp$`P-value`,
+		threshold=1000,
+		significance_T = significance_T,
+		label=NULL, 
+		colour_1 = "#6583E6",
+		colour_2 = "#384980",
+		loglog=TRUE,
+		log_p_vals=TRUE)
 
-		dt_label <- annotate_with_gene_names(meta_list_tmp %>%
-			dplyr::rename(contig = chr, position=pos, pval=`P-value`)) %>% 
-			mutate(y=-pval)
-		if (!cc) {
-			dt_label$y <- loglog_trans(dt_label$y)
-		}
-		dt_label <- data.table(dt_label %>% group_by(ID) %>% 
-			slice_min(pval, with_ties = FALSE) %>% ungroup())
+	dt_label <- annotate_with_gene_names(meta_list_tmp %>%
+		dplyr::rename(contig = chr, position=pos, pval=`P-value`)) %>% 
+		mutate(y=-pval)
+	dt_label$y <- loglog_trans(dt_label$y)
+	dt_label <- data.table(dt_label %>% group_by(ID) %>% 
+		slice_min(pval, with_ties = FALSE) %>% ungroup())
 
-		p$dt <- data.table(p$dt)
-		setkeyv(p$dt, c("contig", "position", "y"))
-		setkeyv(dt_label, c("contig", "position", "y"))
-		dt_label <- merge(p$dt, dt_label)
+	p$dt <- data.table(p$dt)
+	setkeyv(p$dt, c("contig", "position", "y"))
+	setkeyv(dt_label, c("contig", "position", "y"))
+	dt_label <- merge(p$dt, dt_label)
 
-		p$p <- p$p + geom_label_repel(
-			data = dt_label,
-			size = 3, aes(label=external_gene_name),
-			color='grey30', box.padding = 0.2, force = 0.3,
-			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-			min.segment.length=0)
-		width <- 230
-		height <- 100
-		scaling <- 1
-		file <- paste0("meta_analysis", "_",
-			ifelse(cc, "variant_case_control", "variant_cts"))
-		ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
-			height=height*scaling, units='mm')
-		ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
-			height=height*scaling, units='mm')
-		print("done creating!")
+	p$p <- p$p + geom_label_repel(
+		data = dt_label,
+		size = 3, aes(label=external_gene_name),
+		color='grey30', box.padding = 0.2, force = 0.3,
+		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+		min.segment.length=0)
+	width <- 230
+	height <- 100
+	scaling <- 1
+	file <- paste0("meta_analysis_variant_cts_no_height"))
+	ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
+		height=height*scaling, units='mm')
+	ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
+		height=height*scaling, units='mm')
+	print("done creating!")
 
-		width <- 150
-		p <- make_gene_manhattan_category_plot(
-			meta_list_tmp %>% dplyr::rename(
-				position = pos, Pvalue=`P-value`, chromosome_name=chr),
-			buffer=1000000000,
-			scaling=scaling, width=width, height=height, save_figure=FALSE,
-			significance_T=significance_T, loglog=!cc)
+	width <- 150
+	p <- make_gene_manhattan_category_plot(
+		meta_list_tmp %>% dplyr::rename(
+			position = pos, Pvalue=`P-value`, chromosome_name=chr),
+		buffer=1000000000,
+		scaling=scaling, width=width, height=height, save_figure=FALSE,
+		significance_T=significance_T, loglog=TRUE)
 
-		# Could consider including genes
-		dt_label <- annotate_with_gene_names(p$dt) %>% 
-			mutate(y=-pval) %>% dplyr::select(-pval)
-		p$dt <- data.table(p$dt)
-		setkeyv(p$dt, intersect(names(p$dt), names(dt_label)))
-		setkeyv(dt_label, intersect(names(p$dt), names(dt_label)))
-		dt_label <- merge(p$dt, dt_label)
+	# Could consider including genes
+	dt_label <- annotate_with_gene_names(p$dt) %>% 
+		mutate(y=-pval) %>% dplyr::select(-pval)
+	p$dt <- data.table(p$dt)
+	setkeyv(p$dt, intersect(names(p$dt), names(dt_label)))
+	setkeyv(dt_label, intersect(names(p$dt), names(dt_label)))
+	dt_label <- merge(p$dt, dt_label)
 
-		p$p <- p$p + geom_label_repel(
-			data = dt_label,
-			size = 3, aes(label=external_gene_name),
-			color='grey30', box.padding = 0.2, force = 0.3,
-			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-			min.segment.length=0)
+	p$p <- p$p + geom_label_repel(
+		data = dt_label,
+		size = 3, aes(label=external_gene_name),
+		color='grey30', box.padding = 0.2, force = 0.3,
+		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+		min.segment.length=0)
 
-		ggsave(
-			filename=paste0("Figures/", file, '_', anc, '_categories.pdf'), p$p,
-			width=width*scaling, height=height*scaling, units='mm')
-		ggsave(
-			filename=paste0("Figures/", file, '_', anc, '_categories.png'), p$p,
-			width=width*scaling, height=height*scaling, units='mm')
-	}
+	ggsave(
+		filename=paste0("Figures/", file, '_', anc, '_categories.pdf'), p$p,
+		width=width*scaling, height=height*scaling, units='mm')
+	ggsave(
+		filename=paste0("Figures/", file, '_', anc, '_categories.png'), p$p,
+		width=width*scaling, height=height*scaling, units='mm')
+
 }
 
 # # Plot the results against each other (where possible)
