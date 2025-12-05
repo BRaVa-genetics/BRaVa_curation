@@ -409,7 +409,7 @@ for (anc in unique(meta_list$ancestry)) {
 	width <- 230
 	height <- 100
 	scaling <- 1
-	file <- paste0("meta_analysis_variant_cts_no_height"))
+	file <- paste0("meta_analysis_variant_cts_no_height")
 	ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
 		height=height*scaling, units='mm')
 	ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
