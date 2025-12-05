@@ -372,7 +372,7 @@ meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/m
 # 	}
 # }
 
-dt <- dt %>% filter(phenotype != "Height")
+meta_list <- meta_list %>% filter(phenotype != "Height")
 
 # Do the same thing, but split by case-control vs cts (way more power for cts).
 for (anc in unique(meta_list$ancestry)) {
