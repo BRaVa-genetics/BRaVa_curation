@@ -266,8 +266,8 @@ for (i in 1:length(file_root)) {
 		color='grey30', box.padding = 0.2, force = 0.3,
 		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
 		min.segment.length=0)
-	ggsave(filename=paste0("Figures/", file, '_categories.pdf'), p$p, width=width*scaling, height=height*scaling, units='mm')
-	ggsave(filename=paste0("Figures/", file, '_categories.png'), p$p, width=width*scaling, height=height*scaling, units='mm')
+	ggsave(filename=paste0("Figures/", file, '_categories_no_height.pdf'), p$p, width=width*scaling, height=height*scaling, units='mm')
+	ggsave(filename=paste0("Figures/", file, '_categories_no_height.png'), p$p, width=width*scaling, height=height*scaling, units='mm')
 
 }
 

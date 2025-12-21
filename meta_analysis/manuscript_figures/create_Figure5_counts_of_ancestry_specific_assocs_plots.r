@@ -17,6 +17,7 @@ colors[["DM/PA"]] <- "#FF6103"
 colors_class <- c(Burden = "#ff7f00", SKAT = "#1f78b4", `SKAT-O` = "#33a02c")
 
 meta <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_all_meta_subsets_101025.tsv.gz") %>%
+  filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
   mutate(ancestry = case_when(
     ancestry == "all" ~ "Meta",
     ancestry == "non_EUR" ~ "non-EUR",
