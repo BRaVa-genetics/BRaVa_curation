@@ -4,7 +4,7 @@ library(ggplot2)
 library(forcats)
 library(patchwork)
 
-source("../../meta_analysis_utils.r")
+source("../meta_analysis_utils.r")
 
 # Create the plots of prevalence and count, by-disease
 sampling_colors <- c(
