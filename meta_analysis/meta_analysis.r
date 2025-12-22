@@ -59,8 +59,10 @@ main <- function(args)
 
         # Compare N to actual N and throw an error if it doesn't match
         dt_tmp <- add_N_using_filename(file_info, dt_list[[file]])
-        dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
+        if (args$no_Neff) {
+            dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
             Neff_weights_file=args$Neff_weights_file)
+        }
         dt_list[[file]] <- dt_tmp %>% filter(Group != "Cauchy")
     }
 
@@ -196,6 +198,8 @@ parser$add_argument("--no_sex_check", default=FALSE, action='store_true',
 parser$add_argument("--Neff_weights_file",
     default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_may25.tsv.gz",
     help="File to pass effective sample sizes")
+parser$add_argument("--no_Neff", default=FALSE, action='store_true',
+    help="run using Neff estimated from case-control counts rather than the GRM")
 args <- parser$parse_args()
 
 main(args)
