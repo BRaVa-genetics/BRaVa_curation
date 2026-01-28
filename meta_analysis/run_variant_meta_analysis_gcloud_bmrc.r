@@ -24,13 +24,13 @@ main <- function(args)
 	# and the collection of (population, phenotype) pairs for that biobank to 
 	# include in the meta-analysis
 
-	biobanks <- dir(data_dir)[file.info(dir(data_dir, full.names=TRUE))$isdir]
-	biobanks <- intersect(biobanks, names(file_check_information$dataset))
+	folders <- dir(data_dir)[file.info(dir(data_dir, full.names=TRUE))$isdir]
 	results_dt_list <- list()
 
 	vcf_variant_files <- dir(data_dir)
 	vcf_variant_files <- vcf_variant_files[-grep(".gz.csi$",
 		vcf_variant_files)]
+	vcf_variant_files <- setdiff(vcf_variant_files, folders)
 	results <- lapply(vcf_variant_files, extract_file_info)
 	results_dt <- data.table(
 		filename = paste0(data_dir, "/", vcf_variant_files),
@@ -324,3 +324,6 @@ parser$add_argument("--phenotypeID", required=FALSE, default=NULL,
 args <- parser$parse_args()
 
 main(args)
+
+# To run:
+# Rscript run_variant_meta_analysis_gcloud_bmrc.r
