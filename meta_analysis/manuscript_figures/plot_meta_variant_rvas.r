@@ -296,7 +296,8 @@ meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/m
 # Do the same thing, but split by case-control vs cts (way more power for cts).
 # for (anc in unique(meta_list$ancestry)) {
 for (anc in c("all", "EUR", "just_uk-biobank_and_all-of-us")) {
-	for (cc in c(TRUE, FALSE)) {
+	for (cc in FALSE) {
+	# for (cc in c(TRUE, FALSE)) {
 		cat(ifelse(cc, "case control\n", "continuous\n"))
 		meta_list_tmp <- meta_list %>% filter(case_control == cc, ancestry == anc)
 		p <- make_manhattan_plot(meta_list_tmp$chr,
