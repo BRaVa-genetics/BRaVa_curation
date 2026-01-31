@@ -192,6 +192,8 @@ parser$add_argument("--no_sex_check", default=FALSE, action='store_true',
 parser$add_argument("--Neff_weights_file",
     default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_may25.tsv.gz",
     help="File to pass effective sample sizes")
+parser$add_argument("--no_Neff", default=FALSE, action='store_true',
+    help="run using Neff estimated from case-control counts rather than the GRM")
 args <- parser$parse_args()
 
 main(args)
