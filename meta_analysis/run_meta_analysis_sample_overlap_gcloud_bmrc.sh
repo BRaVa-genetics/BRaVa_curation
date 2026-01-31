@@ -8,4 +8,4 @@ module load R
 FILES_GENE=$1
 OUT=$2
 
-Rscript meta_analysis_sample_overlap.r --file_paths $FILES_GENE --no_sex_check --out $OUT --Neff_weights_file /well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights.tsv.gz
+Rscript meta_analysis_sample_overlap.r --file_paths $FILES_GENE --no_sex_check --out $OUT

@@ -3,6 +3,8 @@ library(data.table)
 library(dplyr)
 library(argparse)
 
+source("meta_analysis_utils.r")
+
 main <- function(args)
 {
 	data_dir <- args$data_dir
@@ -14,7 +16,6 @@ main <- function(args)
 	
 	# Ensure that the folder is already present
 	system(paste("mkdir -p", out_meta_results_dir))
-	source("meta_analysis_utils.r")
 	source("../phenotypes/BRaVa_phenotypes_utils.r")
 
 	# Assumes that we have the files locally within a file structure as defined in the munging scripts
@@ -22,6 +23,7 @@ main <- function(args)
 	# collection of (population, phenotype) pairs for that biobank to include in the meta-analysis
 
 	biobanks <- dir(data_dir)[file.info(dir(data_dir, full.names=TRUE))$isdir]
+	biobanks <- intersect(biobanks, names(file_check_information$dataset))
 	results_dt_list <- list()
 
 	for (biobank in biobanks)
@@ -31,9 +33,10 @@ main <- function(args)
 		results <- lapply(biobank_results_files, extract_file_info)
 		results_dt_list[[biobank]] <- data.table(
 			filename = biobank_results_files_full,
-			phenotypeID = sapply(results, `[[`, 4),
-			pop = sapply(results, `[[`, 7),
-			biobank = biobank
+			phenotypeID = sapply(results, `[[`, "phenotype"),
+			pop = sapply(results, `[[`, "ancestry"),
+			biobank = biobank,
+			sex = sapply(results, `[[`, "sex")
 		)
 	}
 
@@ -49,24 +52,57 @@ main <- function(args)
 			"PeptUlcer", "PAD", "Psori", "RheumHeaDis", "RheumArth",
 			"Stroke", "T2Diab", "Urolith", "VaricVeins", "VTE", "ALT",
 			"AlcCons", "AST", "BMI", "HDLC", "Height", "LDLC",
-			"TChol", "TG", "WHRBMI", "HipRep"
-		) # CRP?
+			"TChol", "TG", "WHRBMI", "HipRep", "CRP"
+		)
 	} else {
 		phes <- phe
 	}
 
+	# Here, we must remove any files that have been deemed to be inflated.
+	dt_inflation <- fread(args$inflation_file)
+	dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% 
+		filter(max_MAF != 0.01,
+			lambda_value > 1.3,
+			!(lambda_type %in% c("lambda_50_Burden", "lambda_50_SKAT", "lambda_50"))) %>% 
+		select(phenotype, dataset, ancestry, sex))
+	# Manual curation, adding the following (biobank, trait) tuples containing spurious 
+	# associations
+	dt_inflation <- rbind(dt_inflation, data.table(
+		phenotype = c("ColonRectCanc", "Height"),
+		dataset = c("egcut", "mgbb"),
+		ancestry = c("EUR", "AMR"),
+		sex = c("ALL", "ALL"))
+	) %>% rename(phenotypeID = phenotype, biobank = dataset, pop = ancestry)
+	dt_inflation <- setdiff(dt_inflation, data.table(
+	phenotypeID = c("Height"),
+	biobank = c("uk-biobank"),
+	pop = c("EUR"),
+	sex = c("ALL")))
+
+	# Remove those (phenotype, biobank, sex) files from the meta-analysis
+	setkeyv(dt_inflation, c("phenotypeID", "biobank", "pop", "sex"))
+	setkeyv(results_dt,  c("phenotypeID", "biobank", "pop", "sex"))
+	results_dt <- setdiff(results_dt, merge(dt_inflation, results_dt))
+
 	# Everything
 	for (phe in phes) {
-		files_gene <- (results_dt %>% filter(phenotypeID == phe))$filename
-		files_gene <- paste(files_gene, collapse=",")
-		out <- paste0(out_meta_results_dir, "/", phe, "_gene_meta_analysis_", n_cases, "_cutoff.tsv.gz")
-		cat(paste0("carrying out meta-analysis of ", phe, "\n"))
-		cat(paste0("\nFiles in the analysis: ",
-			paste0(strsplit(files_gene, split=",")[[1]], collapse='\n'), "\n"))
-		system(paste(
-			"sbatch run_meta_analysis_sample_overlap_gcloud_bmrc.sh",
-			files_gene, out))
-		cat(paste0("submitted meta-analysis of ", phe, " completed\n\n"))
+		for (s in c("ALL", "M", "F")) {
+			files_gene <- (results_dt %>% filter(phenotypeID == phe, sex == s))$filename
+			if (length(files_gene) <= 1) { 
+				cat("Either the phenotype is not present, or there is only a single file for:\n")
+				cat(phe, s, "\n")
+			} else {
+				files_gene <- paste(files_gene, collapse=",")
+				out <- paste0(out_meta_results_dir, "/", phe, "_", s, "_gene_meta_analysis_", n_cases, "_cutoff.tsv.gz")
+				cat(paste0("carrying out meta-analysis of ", phe, " in ", s, "\n"))
+				cat(paste0("\nFiles in the analysis: ",
+					paste0(strsplit(files_gene, split=",")[[1]], collapse='\n'), "\n"))
+				system(paste(
+					"sbatch run_meta_analysis_sample_overlap_gcloud_bmrc.sh",
+					files_gene, out))
+				cat(paste0("submitted meta-analysis of ", phe, " completed\n\n"))
+			}
+		}
 	}
 
 	# # We also want to run superpopulation specific meta-analysis, non-EUR,

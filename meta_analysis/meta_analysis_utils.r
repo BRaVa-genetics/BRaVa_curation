@@ -972,9 +972,7 @@ determine_null_correlation <- function(dt, pval_T=0.05, binary=TRUE)
 				dt_j <- dt_tmp %>% filter(dataset == d2)
 				setkeyv(dt_j, c("max_MAF", "Region"))
 				dt_ij <- merge(dt_i, dt_j)
-				if (nrow(dt_ij) < 100) {
-					next
-				}
+				if (nrow(dt_ij) < 100) { next }
 				Z_i <- qnorm(dt_ij$`Pvalue.x`/2) * sign(dt_ij$`BETA_Burden.x`)
 				Z_j <- qnorm(dt_ij$`Pvalue.y`/2) * sign(dt_ij$`BETA_Burden.y`)
 				test <- cor.test(Z_i, Z_j, alternative = "greater")
