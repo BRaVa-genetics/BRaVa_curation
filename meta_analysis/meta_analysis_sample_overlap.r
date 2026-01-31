@@ -59,15 +59,15 @@ main <- function(args)
 
         # Compare N to actual N and throw an error if it doesn't match
         dt_tmp <- add_N_using_filename(file_info, dt_list[[file]])
-        dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
+         if (!args$no_Neff) {
+            dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
             Neff_weights_file=args$Neff_weights_file)
+        }
         dt_list[[file]] <- dt_tmp %>% filter(Group != "Cauchy")
     }
 
     dt <- rbindlist(dt_list, use.names=TRUE)
     dt_cor <- determine_null_correlation(dt, binary=file_info$binary) # Note that this is just using the Burden p-values
-    print(dt_cor)
-    print(key(dt_cor))
     # Merge with Neff information
     dt <- dt %>% filter((!is.na(Pvalue)) & (!is.na(Pvalue_SKAT)) & (!is.na(Pvalue_Burden)))
 
@@ -99,14 +99,12 @@ main <- function(args)
                     # Calculate cross_terms using expand.grid within each group
                     cross_terms = {
                         dataset_pairs <- cbind(expand.grid(dataset1 = dataset, dataset2 = dataset), ancestry=ancestry)
-                        # print(dataset_pairs)
                         cross_sum <- dt_cor[.(dataset_pairs)]$summation
                         cross_sum_total <- colSums(matrix(cross_sum, nrow = n_rows), na.rm = TRUE)
                         # If cross_sum_total is zero, use N_eff; otherwise, use cross_sum_total
                         ifelse(cross_sum_total == 0, N_eff, cross_sum_total)
                         }
                 ) %>% ungroup()
-            print(dt %>% select(N_eff, cross_terms))
 
             # Stouffer's Z - Make sure P-values match, Stat= weighted_Z_Burden_Stouffer
             dt_meta[[test]][["Stouffer"]] <- run_stouffer_overlap(dt %>% group_by(Region, Group, max_MAF),
@@ -192,7 +190,7 @@ parser$add_argument("--out", default="meta_analysis", required=FALSE,
 parser$add_argument("--no_sex_check", default=FALSE, action='store_true',
     help="Perform sex check of samples used for the trait when running meta-analysis?")
 parser$add_argument("--Neff_weights_file",
-    default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights.tsv.gz",
+    default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_may25.tsv.gz",
     help="File to pass effective sample sizes")
 args <- parser$parse_args()
 
