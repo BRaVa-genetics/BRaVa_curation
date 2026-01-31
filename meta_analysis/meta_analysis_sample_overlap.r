@@ -66,7 +66,7 @@ main <- function(args)
         dt_list[[file]] <- dt_tmp %>% filter(Group != "Cauchy")
     }
 
-    dt <- rbindlist(dt_list, use.names=TRUE)
+    dt <- rbindlist(dt_list, use.names=TRUE, fill=TRUE)
     dt_cor <- determine_null_correlation(dt, binary=file_info$binary) # Note that this is just using the Burden p-values
     # Merge with Neff information
     dt <- dt %>% filter((!is.na(Pvalue)) & (!is.na(Pvalue_SKAT)) & (!is.na(Pvalue_Burden)))
@@ -77,7 +77,6 @@ main <- function(args)
         Pvalue_SKAT = ifelse(Pvalue_SKAT > 0.99, 0.99, Pvalue_SKAT),
         Pvalue_Burden = ifelse(Pvalue_Burden > 0.99, 0.99, Pvalue_Burden)
     )
-    setkey(dt, "dataset")
 
     dt_n_eff <- unique(dt %>% select(Region, dataset, ancestry, N_eff))
     setkeyv(dt_n_eff, c("Region", "dataset", "ancestry", "N_eff"))
