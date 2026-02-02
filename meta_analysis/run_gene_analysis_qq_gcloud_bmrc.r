@@ -62,10 +62,11 @@ main <- function(args)
 	# Everything
 	for (i in 1:nrow(results_dt)) {
 		row <- results_dt[i,]
+		filename <- row$filename
 		out <- paste0(out_plot_dir, "/", row$biobank, "_", row$phenotypeID, "_",
 			row$sex, "_", row$pop, "_", row$last_name, "_gene_qq.pdf")
-		cat(paste0("using file: ", row$filename, "\n"))
-		cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh", file_gene[i], out[i])
+		cat(paste0("using file: ", filename, "\n"))
+		cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh", filename, out)
 		system(cmd)
 		cat(paste0(cmd, "\n"))
 		cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
