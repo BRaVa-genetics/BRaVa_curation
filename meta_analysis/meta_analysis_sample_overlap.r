@@ -6,6 +6,7 @@ library(argparse)
 
 # Pass a comma separated list of filenames
 tests <- c("Burden", "SKAT", "SKAT-O")
+tests <- c("Burden")
 source("meta_analysis_utils.r")
 
 # Extract the files to read in
@@ -59,7 +60,7 @@ main <- function(args)
 
         # Compare N to actual N and throw an error if it doesn't match
         dt_tmp <- add_N_using_filename(file_info, dt_list[[file]])
-         if (!args$no_Neff) {
+        if (!args$no_Neff) {
             dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
             Neff_weights_file=args$Neff_weights_file)
         }

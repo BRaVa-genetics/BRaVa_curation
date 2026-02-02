@@ -24,69 +24,58 @@ main <- function(args)
 			"IFHern", "ILDSarc", "MatHem", "NonRheuValv", "Pancreat",
 			"PeptUlcer", "PAD", "Psori", "RheumHeaDis", "RheumArth",
 			"Stroke", "T2Diab", "Urolith", "VaricVeins", "VTE", "ALT",
-			"AlcCons", "AST", "BMI", "CRP", "HDLC", "Height", "LDLC",
-			"TChol", "TG", "WHRBMI", "HipRep"
+			"AlcCons", "AST", "BMI", "HDLC", "Height", "LDLC",
+			"TChol", "TG", "WHRBMI", "HipRep", "CRP"
 		)
 	} else {
 		phes <- phe
 	}
 
-	datasets <- c("all-of-us", "alspac", "biome", "bbj", "ckb", "ccpm",
-		"decode", "egcut", "dan-rav", "genes-and-health", "gel", "pmbb",
-		"mgbb", "qatar-genomes", "uk-biobank", "viking-genes")
+	biobanks <- dir(data_dir)[file.info(dir(data_dir, full.names=TRUE))$isdir]
+	biobanks <- intersect(biobanks, names(file_check_information$dataset))
+	results_dt_list <- list()
+	for (biobank in biobanks)
+	{
+		biobank_results_files <- dir(paste0(data_dir, "/", biobank, "/cleaned/gene"))
+		biobank_results_files_full <- dir(paste0(data_dir, "/", biobank, "/cleaned/gene"), full.names=TRUE)
+		results <- lapply(biobank_results_files, extract_file_info)
+		results_dt_list[[biobank]] <- data.table(
+			filename = biobank_results_files_full,
+			phenotypeID = sapply(results, `[[`, "phenotype"),
+			pop = sapply(results, `[[`, "ancestry"),
+			biobank = biobank,
+			sex = sapply(results, `[[`, "sex"),
+			last_name = sapply(results, `[[`, "last_name")
+		)
+	}
 
-	ancestries <- c("AFR", "AMR", "EAS", "EUR", "SAS")
+	results_dt <- rbindlist(results_dt_list)
+	results_dt <- results_dt %>% filter(!(filename %in% grep("\\.extra_cauchy\\.", filename, value=TRUE)))
+	results_dt <- results_dt %>% filter(phenotypeID %in% phes)
 
-	for (phe in phes) {
-		cat(paste0("carrying out plotting of gene QQ for ", phe, "\n"))
-		for (dataset in datasets) {
-			for (anc in ancestries) {
-				file_gene <- grep(
-					paste0(".*cleaned/gene/.*", dataset, "\\..*",  phe, ".*", anc),
-					dir(data_dir, full.names=TRUE, recursive=TRUE), value=TRUE)
-				if ((length(file_gene) > 0) & (length(file_gene) <= 3)) {
-					sexes <- c()
-					for (f in file_gene) {
-						sexes <- c(sexes, ifelse(
-							grepl("\\.ALL\\.", f), "ALL",
-								ifelse(grepl("\\.F\\.", f), "F",
-									ifelse(grepl("\\.M\\.", f), "M", NA))))
-					}
-					if (length(unique(sexes)) == length(sexes)) {
-						# output file
-						out <- paste0(out_plot_dir, "/", dataset, "_", phe, "_",
-							sexes, "_", anc, "_gene_qq.pdf")
-						for (i in 1:length(file_gene)) {
-							cat(paste0("using file: ", file_gene[i], "\n"))
-							cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh",
-								file_gene[i], out[i])
-							system(cmd)
-							cat(paste0(cmd, "\n"))
-							cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
-						}
-					} else {
-						cat(paste0("There are multiple files for one of the sexes for (",
-							phe, ", ", dataset, ", ", anc, ")\n"))
-						print(file_gene)
-					}
-				} else {
-					if (length(file_gene) == 0) {
-						cat(paste0("This phenotype is not available for (",
-							phe, ", ", dataset, ", ", anc, ")\n"))
-					} else {
-						cat(paste0("There are more than 3 unique files for (",
-							phe, ", ", dataset, ", ", anc, ")\n"))
-					}
-				}
-			}
-		}
-	}	
+	# Ensure that there are not multiple results files for a given (phenotype, biobank, sex) combination
+	if (nrow(results_dt %>% group_by(phenotypeID, pop, biobank, sex, last_name) %>% filter(n() > 1)) > 0) {
+		message("Multiple (pheno, pop, biobank, sex, last_name) files - this will be a problem in meta-analysis")
+		quit(status = 1)
+	}
+
+	# Everything
+	for (i in 1:nrow(results_dt)) {
+		row <- results_dt[i,]
+		out <- paste0(out_plot_dir, "/", row$biobank, "_", row$phenotypeID, "_",
+			row$sex, "_", row$pop, "_", row$last_name, "_gene_qq.pdf")
+		cat(paste0("using file: ", row$filename, "\n"))
+		cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh", file_gene[i], out[i])
+		system(cmd)
+		cat(paste0(cmd, "\n"))
+		cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
+	}
 }
 
 # Add arguments
 parser <- ArgumentParser()
 parser$add_argument("--analysis_results_folder", required=FALSE,
-	default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs")
+	default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks")
 parser$add_argument("--out_dir",
 	default="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plots_biobank_specific",
 	required=FALSE, help="Output folder path")

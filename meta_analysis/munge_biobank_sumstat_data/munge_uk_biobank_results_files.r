@@ -91,6 +91,7 @@ if (!download_cleaned) {
             cat(paste0(phenotype, ": "))
             subfiles <- grep(paste0(".*chr[0-9X]+_(split_[0-9]+_)*", phenotype, "_(AFR|AMR|EAS|EUR|SAS).*"), files[[class]], value=TRUE)
             pops <- unique(gsub(".*chr[0-9X]+_(split_[0-9]+_)*(.*)_(AFR|AMR|EAS|EUR|SAS).*", "\\3", subfiles))
+            pops <- "EUR"
 
             for (pop in pops) {
                 cat(pop, "\n")
