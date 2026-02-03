@@ -236,11 +236,11 @@ dt <- rbindlist(dt_list, fill=TRUE)
 
 # Before we write - note that BMI for AMR will be excluded because of inflation, but the v7 version does
 # not have that issue. As a result, we can determine Neff from the v7 data, and include that here.
-dt <- dt %>% filter(dataset == "all-of-us" & ancestry == "AMR" & pheno=="BMI")
+dt <- dt %>% filter(!(dataset == "all-of-us" & ancestry == "AMR" & pheno=="BMI"))
 dt <- rbind(dt, dt_aou_v7 %>% filter(ancestry=="AMR", pheno=="BMI"), fill=TRUE)
 
 # fwrite(dt, file = "~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/Neff_weights_may25.tsv.gz", sep='\t', quote=FALSE)
-fwrite(dt, file = "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_may25.tsv.gz", sep='\t', quote=FALSE)
+fwrite(dt, file = "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_feb26.tsv.gz", sep='\t', quote=FALSE)
 # This file should be placed in the BRaVa_inputs directory: /well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/
 
 dt <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_may25.tsv.gz")
@@ -273,11 +273,13 @@ dt_plot <- merge(dt, results_file_information) %>% mutate(
 dt_plot <- dt_plot %>% mutate(neff_ind = ifelse(is.na(n), 4 / ((1/n_cases) + (1/n_controls)), n))
 
 # Merge in the results file information
-
+pdf("../manuscript_figures/Figures/Neff_across_biobanks.pdf", width=10, height=10)
 # Plot them against each other, split by (biobank, ancestry)
-ggplot(dt_plot) + 
+p <- ggplot(dt_plot) + 
 	geom_point(aes(x=neff_ind, y=nglmm, col=ancestry)) + 
 	theme_bw() + 
 	geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red")  +
 	facet_wrap(~ dataset + ancestry, scales="free")
+print(p)
+dev.off()
 
