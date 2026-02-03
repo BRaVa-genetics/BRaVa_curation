@@ -69,7 +69,6 @@ main <- function(args)
 		cmd <- paste("sbatch run_analysis_qq_gcloud_bmrc.sh", filename, out)
 		system(cmd)
 		cat(paste0(cmd, "\n"))
-		cat(paste0("submitted meta-analysis QQ plotting of ", phe, "\n\n"))
 	}
 }
 
