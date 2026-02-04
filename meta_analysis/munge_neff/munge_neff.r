@@ -238,12 +238,14 @@ dt <- rbindlist(dt_list, fill=TRUE)
 # not have that issue. As a result, we can determine Neff from the v7 data, and include that here.
 dt <- dt %>% filter(!(dataset == "all-of-us" & ancestry == "AMR" & pheno=="BMI"))
 dt <- rbind(dt, dt_aou_v7 %>% filter(ancestry=="AMR", pheno=="BMI"), fill=TRUE)
+dt <- dt %>% filter(!(pheno == "LDLC" & ancestry == "AFR" & dataset=="mgbb")) # Caution as Neff seems off here.
 
 # fwrite(dt, file = "~/Repositories/BRaVa_curation/data/meta_analysis/gcloud/Neff_weights_may25.tsv.gz", sep='\t', quote=FALSE)
+
 fwrite(dt, file = "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_feb26.tsv.gz", sep='\t', quote=FALSE)
 # This file should be placed in the BRaVa_inputs directory: /well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/
 
-dt <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_may25.tsv.gz")
+dt <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/Neff/Neff_weights_feb26.tsv.gz") %>% select(-n)
 # Add in column of Neff as estimated by the (Ncases, Ncontrols) or N.
 local_gene_sumstat_folders <- c(
 	"/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/biobanks/all-of-us/cleaned/gene/",
