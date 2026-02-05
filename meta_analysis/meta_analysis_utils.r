@@ -950,14 +950,54 @@ add_N <- function(file_info, dt_gene)
     return(list(dt_gene = dt_gene, binary=binary))
 }
 
-determine_null_correlation <- function(dt, pval_T=0.05, binary=TRUE)
+determine_null_correlation <- function(dt, ref, pval_T=0.05, binary=TRUE)
 {
 	# Assume that correlation across ancestry labels is 0
 	cor_count_pval <- list()
+	dt <- dt %>% filter(Group == "synonymous", max_MAF == 1e-3)
+	setkeyv(ref, c("Region", "ancestry", "max_MAF", "Group", "dataset"))
+	ref_max <- ref[, .SD[n_ref == max(as.integer(n_ref))], by = ancestry]
+	ref_max <- ref_max %>% select(-dataset)
+	setkeyv(ref_max, c("Region", "ancestry", "max_MAF", "Group"))
 	# Restrict to what should be the null set of tests
 	if (binary) {
-		dt <- dt %>% filter(Group == "synonymous", max_MAF == 1e-3, MAC_case > 30, MAC_case < 1000)
+		dt_missing <- dt %>% filter(is.na(MAC_case))
+		if (nrow(dt_missing) > 0) {
+			# Determine the (ancestry, dataset) pairs with missing MAC_case information
+			# If the matching (ancestry, dataset) is there, use that
+			# otherwise match on the largest reference dataset available for that ancestry
+			setkeyv(dt_missing, c("Region", "ancestry", "max_MAF", "Group", "dataset"))
+			dt_matched_dataset_filled <- merge(dt_missing, ref)
+			setkeyv(dt_missing, c("ancestry", "dataset"))
+			dt_remaining <- dt_missing[!unique(dt_matched_dataset_filled[, .(ancestry, dataset)])]
+			setkeyv(dt_remaining, c("Region", "ancestry", "max_MAF", "Group"))
+			dt_mismatched_dataset_filled <- merge(dt_remaining, ref_max)
+			dt_imputed <- rbind(dt_matched_dataset_filled, dt_mismatched_dataset_filled)
+			dt_imputed <- dt_imputed %>% mutate(
+				MAC_case = CAF*N_case,
+				MAC_control = CAF*N_control,
+				MAC = CAF*(N_case+N_control))
+			dt <- rbind(dt %>% filter(!is.na(MAC_case)),
+				dt_imputed %>% select(-c("MAC_ref", "CAF", "n_ref")))
+		}
+		dt <- dt %>% filter(MAC_case > 30, MAC_case < 1000)
 	} else {
+		dt_missing <- dt %>% filter(is.na(MAC))
+		if (nrow(dt_missing) > 0) {
+			# Determine the (ancestry, dataset) pairs with missing MAC_case information
+			# If the matching (ancestry, dataset) is there, use that
+			# otherwise match on the largest reference dataset available for that ancestry
+			setkeyv(dt_missing, c("Region", "ancestry", "max_MAF", "Group", "dataset"))
+			dt_matched_dataset_filled <- merge(dt_missing, ref)
+			setkeyv(dt_missing, c("ancestry", "dataset"))
+			dt_remaining <- dt_missing[!unique(dt_matched_dataset_filled[, .(ancestry, dataset)])]
+			setkeyv(dt_remaining, c("Region", "ancestry", "max_MAF", "Group"))
+			dt_mismatched_dataset_filled <- merge(dt_remaining, ref_max)
+			dt_imputed <- rbind(dt_matched_dataset_filled, dt_mismatched_dataset_filled)
+			dt_imputed <- dt_imputed %>% mutate(MAC = CAF*N)
+			dt <- rbind(dt %>% filter(!is.na(MAC)),
+				dt_imputed %>% select(-c("MAC_ref", "CAF", "n_ref")))
+		}
 		dt <- dt %>% filter(Group == "synonymous", max_MAF == 1e-3, MAC > 50)
 	}
 

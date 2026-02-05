@@ -60,6 +60,7 @@ main <- function(args)
 
         # Compare N to actual N and throw an error if it doesn't match
         dt_tmp <- add_N_using_filename(file_info, dt_list[[file]])
+        dt_tmp$N <- dt_tmp$N_eff
         if (!args$no_Neff) {
             dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
             Neff_weights_file=args$Neff_weights_file)
@@ -68,7 +69,8 @@ main <- function(args)
     }
 
     dt <- rbindlist(dt_list, use.names=TRUE, fill=TRUE)
-    dt_cor <- determine_null_correlation(dt, binary=file_info$binary) # Note that this is just using the Burden p-values
+    dt_ref <- fread(args$reference_cafs)
+    dt_cor <- determine_null_correlation(dt, dt_ref, binary=file_info$binary) # Note that this is just using the Burden p-values
     # Merge with Neff information
     dt <- dt %>% filter((!is.na(Pvalue)) & (!is.na(Pvalue_SKAT)) & (!is.na(Pvalue_Burden)))
 
@@ -194,6 +196,9 @@ parser$add_argument("--Neff_weights_file",
     help="File to pass effective sample sizes")
 parser$add_argument("--no_Neff", default=FALSE, action='store_true',
     help="run using Neff estimated from case-control counts rather than the GRM")
+parser$add_argument("--reference_cafs", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/reference_cafs.tsv.gz",
+    required=FALSE,
+    help="File containing the CAFs of large reference datasets to use to estimate CAF in the target sample")
 args <- parser$parse_args()
 
 main(args)

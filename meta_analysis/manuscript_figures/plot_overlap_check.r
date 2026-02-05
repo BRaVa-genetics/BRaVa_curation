@@ -7,13 +7,13 @@ library(latex2exp)
 source("meta_analysis_utils.r")
 
 sample_overlap_folder <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100_sample_overlap"
-no_sample_overlap_folder <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100_no_overlap"
+no_sample_overlap_folder <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100"
 
 files <- grep("gz$", dir(sample_overlap_folder), value=TRUE)
 files_sample_overlap <- paste0(sample_overlap_folder, "/", files)
 files_no_sample_overlap <- paste0(no_sample_overlap_folder, "/", files)
 
-pdf("overlap_check_binned.pdf", width=3, height=3)
+pdf("manuscript_figures/Figures/overlap_check_binned.pdf", width=3, height=3)
 for (i in 1:length(files_sample_overlap)) {
     print(i)
 	dt2 <- fread(files_sample_overlap[i])

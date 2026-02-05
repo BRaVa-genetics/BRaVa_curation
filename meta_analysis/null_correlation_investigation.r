@@ -92,6 +92,8 @@ setkeyv(dt_ref_ukb_eur, c("Region", "Group", "max_MAF"))
 setkeyv(dt_ref_aou_eur, c("Region", "Group", "max_MAF"))
 dt_eur <- merge(dt_ref_aou_eur, dt_ref_ukb_eur)
 plot(dt_eur$CAF.x, dt_eur$CAF.y)
+plot(log10(dt_eur$CAF.x), log10(dt_eur$CAF.y))
+abline(0,1, col='red')
 
 # Now EAS BBJ vs EAS AoU
 dt_ref_bbj_eas <- fread("manuscript_tables/reference.EAS.10245.bbj.tsv.gz")                     
@@ -101,6 +103,8 @@ setkeyv(dt_ref_bbj_eas, c("Region", "Group", "max_MAF"))
 setkeyv(dt_ref_aou_eas, c("Region", "Group", "max_MAF"))
 dt_eas <- merge(dt_ref_aou_eas, dt_ref_bbj_eas)
 plot(dt_eas$CAF.x, dt_eas$CAF.y)
+plot(log10(dt_eas$CAF.x), log10(dt_eas$CAF.y))
+abline(0,1, col='red')
 
 # Now SAS G&H vs SAS AoU
 dt_ref_gh_sas <- fread("manuscript_tables/reference.SAS.32043.genes-and-health.tsv.gz")                     
@@ -110,6 +114,8 @@ setkeyv(dt_ref_gh_sas, c("Region", "Group", "max_MAF"))
 setkeyv(dt_ref_aou_sas, c("Region", "Group", "max_MAF"))
 dt_sas <- merge(dt_ref_aou_sas, dt_ref_gh_sas)
 plot(dt_sas$CAF.x, dt_sas$CAF.y)
+plot(log10(dt_sas$CAF.x), log10(dt_sas$CAF.y))
+abline(0,1, col='red')
 
 # Create an overall reference file
 # label ancestry, sample size, dataset - then use this to do prediction
@@ -122,6 +128,7 @@ for (file in ref_files) {
 	dt_list[[file]]$n_ref <- as.integer(gsub(".*\\.([0-9]+)\\..*", "\\1", file))
 }
 dt_ref <- rbindlist(dt_list, use.names=TRUE)
+fwrite(dt_ref, "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/reference_cafs.tsv.gz", sep='\t')
 dt_ref <- dt_ref[, .SD[n_ref == max(as.integer(n_ref))], by = ancestry]
 setkeyv(dt_ref, c("Region", "Group", "max_MAF", "ancestry"))
 

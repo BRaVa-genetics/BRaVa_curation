@@ -11,20 +11,30 @@ library(ggtext)
 library(ggnewscale)
 
 source("meta_analysis_utils.r")
+# system("scp 'qen698@cluster2.bmrc.ox.ac.uk:/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene_phenotype_pairs*.gz' manuscript_figures/")
+# system("scp 'qen698@cluster2.bmrc.ox.ac.uk:/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/biobank_results_at_sig_genes.tsv.gz' manuscript_figures/")
+local <- TRUE
+if (local) {
+  data_dir <- "manuscript_figures/"
+  out_dir <- "manuscript_figures/Figures/"
+} else {
+  data_dir <- "/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/"
+  out_dir <- "/well/lindgren/dpalmer/BRaVa_curation/meta_analysis/manuscript_figures/Figures/"
+}
 
-dt <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/biobank_results_at_sig_genes.tsv.gz")
-dt_agent <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/novelty_agent_results.tsv") %>% 
+dt <- fread(paste0(data_dir, "biobank_results_at_sig_genes.tsv.gz"))
+dt_agent <- fread(paste0(data_dir, "novelty_agent_results.tsv")) %>% 
   rename(external_gene_name = gene, phenotype_full = phenotype) %>% 
   filter(!(external_gene_name %in% c("DNMT3A", "TET2", "ASXL1")))
-out_dir <- "/well/lindgren/dpalmer/BRaVa_curation/meta_analysis/manuscript_figures/Figures/"
+
 
 for (type in c("binary", "continuous")) {
   for (maf in c(0.001, 0.0001)) {
     for (G in c("pLoF", "damaging_missense_or_protein_altering", "pLoF;damaging_missense_or_protein_altering")) {
       dt_tmp <- dt %>% filter(max_MAF == !!maf, Group == !!G)
-      dt_meta <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene_phenotype_pairs_for_agent_superset.tsv.gz") %>% 
+      dt_meta <- fread(paste0(data_dir, "gene_phenotype_pairs_for_agent_superset.tsv.gz")) %>% 
         filter(max_MAF == !!maf, Group == !!G, class == "Burden")
-      dt_meta_subset <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene_phenotype_pairs_for_agent.tsv.gz") %>% 
+      dt_meta_subset <- fread(paste0(data_dir, "gene_phenotype_pairs_for_agent.tsv.gz")) %>% 
         filter(!grepl("just_uk-biobank_and_all-of-us", file)) %>% 
         filter(class == "Burden", Group == !!G, max_MAF == !!maf) %>%
         mutate(external_gene_name = ifelse(external_gene_name == "", Region, external_gene_name))
