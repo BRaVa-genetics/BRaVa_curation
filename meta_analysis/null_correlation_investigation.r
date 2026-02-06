@@ -146,6 +146,8 @@ for (i in 1:nrow(dt_sumstats_cts)) {
 	dt_tmp <- dt_tmp %>% mutate(E_MAC = n*CAF)
 	print(paste0(dt_sumstats_cts$dataset[i], ", ", dt_sumstats_cts$ancestry[i], ", ", dt_sumstats_cts$phenotype[i]))
 	print(cor(dt_tmp$E_MAC, dt_tmp$MAC))
+	plot(dt_tmp$E_MAC, dt_tmp$MAC)
+	abline(0,1,col='red')
 }
 
 # Now do the same for binary traits
@@ -170,6 +172,8 @@ for (i in 1:nrow(dt_sumstats_binary)) {
 	print(cor(dt_tmp$E_MAC, dt_tmp$MAC))
 	print(cor(dt_tmp$E_MAC_control, dt_tmp$MAC_control))
 	print(cor(dt_tmp$E_MAC_case, dt_tmp$MAC_case))
+	plot(dt_tmp$E_MAC, dt_tmp$MAC)
+	abline(0,1,col='red')
 }
 
 # Then use that to paste in the estimated CAC which we can then filter on

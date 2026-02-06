@@ -963,6 +963,7 @@ determine_null_correlation <- function(dt, ref, pval_T=0.05, binary=TRUE)
 	if (binary) {
 		dt_missing <- dt %>% filter(is.na(MAC_case))
 		if (nrow(dt_missing) > 0) {
+			cat("missing data - imputing...\n")
 			# Determine the (ancestry, dataset) pairs with missing MAC_case information
 			# If the matching (ancestry, dataset) is there, use that
 			# otherwise match on the largest reference dataset available for that ancestry
@@ -984,6 +985,7 @@ determine_null_correlation <- function(dt, ref, pval_T=0.05, binary=TRUE)
 	} else {
 		dt_missing <- dt %>% filter(is.na(MAC))
 		if (nrow(dt_missing) > 0) {
+			cat("missing data - imputing...\n")
 			# Determine the (ancestry, dataset) pairs with missing MAC_case information
 			# If the matching (ancestry, dataset) is there, use that
 			# otherwise match on the largest reference dataset available for that ancestry
@@ -998,7 +1000,7 @@ determine_null_correlation <- function(dt, ref, pval_T=0.05, binary=TRUE)
 			dt <- rbind(dt %>% filter(!is.na(MAC)),
 				dt_imputed %>% select(-c("MAC_ref", "CAF", "n_ref")))
 		}
-		dt <- dt %>% filter(Group == "synonymous", max_MAF == 1e-3, MAC > 50)
+		dt <- dt %>% filter(MAC > 50)
 	}
 
 	i <- 1
@@ -1034,7 +1036,6 @@ determine_null_correlation <- function(dt, ref, pval_T=0.05, binary=TRUE)
 	setkeyv(cor_count_pval, c("dataset", "dataset2", "ancestry"))
 	return(cor_count_pval)
 }
-
 
 cauchy_combination <- function(p_values, weights=NULL)
 {
