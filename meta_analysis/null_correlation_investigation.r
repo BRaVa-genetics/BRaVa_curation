@@ -55,7 +55,7 @@ file <- info$file_n
 dataset <- info$dataset_n
 dt_binary_ref <- fread(file) %>%
 	filter(max_MAF == 0.001, Group=="synonymous") %>% 
-		mutate(CAF=MAC/n_max) %>% 
+		mutate(CAF=MAC/(2*n_max)) %>% 
 		select(Region, Group, max_MAF, MAC, CAF) %>% rename(MAC_ref=MAC)
 setkeyv(dt_binary_ref, c("Region", "Group", "max_MAF"))
 fwrite(dt_binary_ref, file = paste0("manuscript_tables/reference.EAS.", n_max, ".", dataset, ".tsv.gz"), sep='\t')
@@ -67,7 +67,7 @@ file <- info$file_n
 dataset <- info$dataset_n
 dt_cts_ref <- fread(file) %>% 
 	filter(max_MAF == 0.001, Group=="synonymous") %>% 
-	mutate(CAF=MAC/n_max) %>% 
+	mutate(CAF=MAC/(2*n_max)) %>% 
 	select(Region, Group, max_MAF, MAC, CAF) %>% rename(MAC_ref=MAC)
 setkeyv(dt_cts_ref, c("Region", "Group", "max_MAF"))
 fwrite(dt_cts_ref, file = paste0("manuscript_tables/reference.EUR.", n_max, ".", dataset, ".tsv.gz"), sep='\t')
@@ -79,7 +79,7 @@ file <- info$file_n
 dataset <- info$dataset_n
 dt_cts_ref <- fread(file) %>% 
 	filter(max_MAF == 0.001, Group=="synonymous") %>% 
-	mutate(CAF=MAC/n_max) %>% 
+	mutate(CAF=MAC/(2*n_max)) %>% 
 	select(Region, Group, max_MAF, MAC, CAF) %>% rename(MAC_ref=MAC)
 setkeyv(dt_cts_ref, c("Region", "Group", "max_MAF"))
 fwrite(dt_cts_ref, file = paste0("manuscript_tables/reference.SAS.", n_max, ".", dataset, ".tsv.gz"), sep='\t')
@@ -129,6 +129,7 @@ for (file in ref_files) {
 }
 dt_ref <- rbindlist(dt_list, use.names=TRUE)
 fwrite(dt_ref, "/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/reference_cafs.tsv.gz", sep='\t')
+dt_ref <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/reference_cafs.tsv.gz")
 dt_ref <- dt_ref[, .SD[n_ref == max(as.integer(n_ref))], by = ancestry]
 setkeyv(dt_ref, c("Region", "Group", "max_MAF", "ancestry"))
 
@@ -143,11 +144,10 @@ for (i in 1:nrow(dt_sumstats_cts)) {
 	setkeyv(dt_tmp, c("Region", "Group", "max_MAF", "ancestry"))
 	dt_tmp <- merge(dt_tmp, dt_ref)
 	if (nrow(dt_tmp) < 100) { next }
-	dt_tmp <- dt_tmp %>% mutate(E_MAC = n*CAF)
+	dt_tmp <- dt_tmp %>% mutate(E_MAC = 2*n*CAF)
 	print(paste0(dt_sumstats_cts$dataset[i], ", ", dt_sumstats_cts$ancestry[i], ", ", dt_sumstats_cts$phenotype[i]))
 	print(cor(dt_tmp$E_MAC, dt_tmp$MAC))
-	plot(dt_tmp$E_MAC, dt_tmp$MAC)
-	abline(0,1,col='red')
+	print(summary(dt_tmp$E_MAC/dt_tmp$MAC))
 }
 
 # Now do the same for binary traits
@@ -165,15 +165,14 @@ for (i in 1:nrow(dt_sumstats_binary)) {
 	dt_tmp <- merge(dt_tmp, dt_ref)
 	if (nrow(dt_tmp) < 100) { next }
 	dt_tmp <- dt_tmp %>% mutate(
-		E_MAC = (n_cases+n_controls)*CAF,
-		E_MAC_control = n_controls*CAF,
-		E_MAC_case = n_cases*CAF)
+		E_MAC = 2*(n_cases+n_controls)*CAF,
+		E_MAC_control = 2*n_controls*CAF,
+		E_MAC_case = 2*n_cases*CAF)
 	print(paste0(dt_sumstats_binary$dataset[i], ", ", dt_sumstats_binary$ancestry[i], ", ", dt_sumstats_binary$phenotype[i]))
 	print(cor(dt_tmp$E_MAC, dt_tmp$MAC))
 	print(cor(dt_tmp$E_MAC_control, dt_tmp$MAC_control))
 	print(cor(dt_tmp$E_MAC_case, dt_tmp$MAC_case))
-	plot(dt_tmp$E_MAC, dt_tmp$MAC)
-	abline(0,1,col='red')
+	print(summary(dt_tmp$E_MAC/dt_tmp$MAC))
 }
 
 # Then use that to paste in the estimated CAC which we can then filter on
@@ -203,9 +202,9 @@ for (pheno in phenotypes) {
 							ancestry = dt_tmp$ancestry[i])
 					setkeyv(dt_list[[dt_tmp$file[i]]], c("Region", "Group", "max_MAF", "ancestry"))
 					dt_list[[dt_tmp$file[i]]] <- merge(dt_list[[dt_tmp$file[i]]], dt_ref) %>% 
-						mutate(MAC = (n_cases+n_controls)*CAF,
-							MAC_case= n_cases*CAF,
-							MAC_control = n_controls*CAF) %>%
+						mutate(MAC = 2*(n_cases+n_controls)*CAF,
+							MAC_case= 2*n_cases*CAF,
+							MAC_control = 2*n_controls*CAF) %>%
 						filter(MAC_case > 30, MAC_case < 1000)
 				}
 				setkeyv(dt_list[[dt_tmp$file[i]]], c("max_MAF", "Region"))
@@ -225,7 +224,7 @@ for (pheno in phenotypes) {
 							ancestry = dt_tmp$ancestry[i])
 					setkeyv(dt_list[[dt_tmp$file[i]]], c("Region", "Group", "max_MAF", "ancestry"))
 					dt_list[[dt_tmp$file[i]]] <- merge(dt_list[[dt_tmp$file[i]]], dt_ref) %>% 
-						mutate(MAC = n*CAF) %>% filter(MAC > 50)
+						mutate(MAC = 2*n*CAF) %>% filter(MAC > 50)
 				}
 				setkeyv(dt_list[[dt_tmp$file[i]]], c("max_MAF", "Region"))
 			}

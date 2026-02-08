@@ -8,4 +8,4 @@ module load R
 FILES_GENE=$1
 OUT=$2
 
-Rscript meta_analysis.r --file_paths $FILES_GENE --no_sex_check --out $OUT
+Rscript meta_analysis.r --file_paths $FILES_GENE --no_sex_check --estimate_CAF --out $OUT

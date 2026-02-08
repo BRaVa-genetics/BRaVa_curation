@@ -13,6 +13,71 @@ source("meta_analysis_utils.r")
 # Let the case control threshold be an option
 # Let the N threshold be an option
 
+# estimate_var <- function(CAF, n_rare, n_ultra_rare)
+# {
+#     lambda <- 2 * CAF
+#     if (lambda < 0.05) {
+#         var <- 2 * CAF * (1 - CAF)
+#     } else if ((lambda < 0.2) & (n_rare > 0)) {
+#         var <- 2 * (CAF - CAF^2 / m)
+#     } else {
+#         frac_rare  <- Number_rare / (Number_rare + Number_ultra_rare)
+#         CAF_rare   <- CAF * frac_rare
+#         CAF_ultra  <- CAF * (1 - frac_rare)
+
+#         if (n_rare > 0) {
+#             var_rare <- 2 * (CAF_rare - CAF_rare^2 / Number_rare)
+#         } else {
+#             var_rare <- 0
+#         }
+
+#         lambda_u <- 2 * CAF_ultra
+#         c <- 1 - exp(-lambda_u)
+#         var_ultra <- c * (1 - c)
+#         var <- var_rare + var_ultra
+#     }
+#     return(var)
+# }
+
+estimate_var <- function(CAF, n_rare, n_ultra_rare) {
+
+  lambda <- 2 * CAF
+  var <- numeric(length(CAF))
+
+  # Case 1: very small lambda
+  idx1 <- lambda < 0.05
+  var[idx1] <- 2 * CAF[idx1] * (1 - CAF[idx1])
+
+  # Case 2: intermediate lambda with rare variants
+  idx2 <- (lambda >= 0.05) & (lambda < 0.2) & (n_rare > 0)
+  var[idx2] <- 2 * (CAF[idx2] - CAF[idx2]^2 / n_rare[idx2])
+
+  # Case 3: everything else (split rare / ultra-rare)
+  idx3 <- !(idx1 | idx2)
+
+  if (any(idx3)) {
+    frac_rare <- n_rare[idx3] / (n_rare[idx3] + n_ultra_rare[idx3])
+    frac_rare[is.na(frac_rare)] <- 0
+
+    CAF_rare  <- CAF[idx3] * frac_rare
+    CAF_ultra <- CAF[idx3] * (1 - frac_rare)
+
+    var_rare <- numeric(sum(idx3))
+    has_rare <- n_rare[idx3] > 0
+    var_rare[has_rare] <-
+      2 * (CAF_rare[has_rare] -
+           CAF_rare[has_rare]^2 / n_rare[idx3][has_rare])
+
+    lambda_u <- 2 * CAF_ultra
+    c <- 1 - exp(-lambda_u)
+    var_ultra <- c * (1 - c)
+
+    var[idx3] <- var_rare + var_ultra
+  }
+
+  return(pmax(var, 0))
+}
+
 main <- function(args)
 {
     files <- strsplit(args$file_paths, split=",")[[1]]
@@ -22,9 +87,17 @@ main <- function(args)
     file <- gsub("(.*\\/)(.*)", "\\2", files[1])
     file_info_template <- extract_file_info(file)
     cat(paste(paste(names(args), args, sep=": "), collapse="\n"), "\n")
+    if (args$estimate_CAF) {
+        ref <- fread(args$reference_CAF)
+        setkeyv(ref, c("Region", "ancestry", "max_MAF", "Group", "dataset"))
+        ref_max <- ref[, .SD[n_ref == max(as.integer(n_ref))], by = ancestry]
+        ref_max <- ref_max %>% select(-dataset)
+        setkeyv(ref_max, c("Region", "ancestry", "max_MAF", "Group"))
+    }
 
     for (f in files)
     {
+        print(f)
         # Throw an error if the file is not there
         if (!file.exists(f)) {
             stop(paste("File:", file, "does not exist."))
@@ -63,7 +136,100 @@ main <- function(args)
             dt_tmp <- add_N_using_Neff_weights_file(file_info, dt_tmp,
             Neff_weights_file=args$Neff_weights_file)
         }
-        dt_list[[file]] <- dt_tmp %>% filter(Group != "Cauchy")
+        dt_tmp <- dt_tmp %>% filter(Group != "Cauchy")
+        setDT(dt_tmp)
+
+        if (args$estimate_CAF) {
+            if (file_info$binary) {
+                if ("MAC_case" %in% names(dt_tmp)) {
+                    # No need to impute - determine estimate directly
+                    cat(paste0(file_info$dataset, ", ", file_info$ancestry, ": No need to impute - determine estimate directly\n"))
+                    dt_tmp[, CAF := MAC / (2*(file_info$n_cases+file_info$n_controls))]
+                } else {
+                    cat(paste0(file_info$dataset, ", ", file_info$ancestry, ": Impute!\n"))
+                    setindexv(dt_tmp, c("Region", "max_MAF", "Group"))
+                    if (ref[ancestry == file_info$ancestry & dataset == file_info$dataset, .N] > 0) {
+                        cat(paste0("using: ", file_info$dataset, ": ", file_info$ancestry, " for imputation\n"))
+                        dt_tmp <- ref[ancestry == file_info$ancestry & dataset == file_info$dataset, ][dt_tmp, on = .(Region, max_MAF, Group)]
+                        dt_tmp[is.na(CAF), CAF := 1 / (2*(file_info$n_cases+file_info$n_controls))]
+                        if ("i.Number_rare" %in% names(dt_tmp)) {
+                            dt_tmp[, `:=`(
+                              Number_rare  = i.Number_rare,
+                              Number_ultra_rare = i.Number_ultra_rare
+                            )]
+                            dt_tmp[, c("i.Number_rare", "i.Number_ultra_rare") := NULL]
+                        }
+                        dt_tmp[is.na(Number_ultra_rare), Number_ultra_rare := 1]
+                        dt_tmp[is.na(Number_rare), Number_rare := 0]
+                        dt_tmp[, `:=`(
+                          dataset  = i.dataset,
+                          ancestry = i.ancestry
+                        )]
+                        dt_tmp[, c("i.dataset", "i.ancestry") := NULL]
+                    } else {
+                        cat("No exact match, using largest cohort in the references\n")
+                        dt_tmp <- ref_max[ancestry == file_info$ancestry, ][dt_tmp, on = .(Region, max_MAF, Group)]
+                        dt_tmp[is.na(CAF), CAF := 1 / (2*(file_info$n_cases+file_info$n_controls))]
+                        if ("i.Number_rare" %in% names(dt_tmp)) {
+                            dt_tmp[, `:=`(
+                              Number_rare  = i.Number_rare,
+                              Number_ultra_rare = i.Number_ultra_rare
+                            )]
+                            dt_tmp[, c("i.Number_rare", "i.Number_ultra_rare") := NULL]
+                        }
+                        dt_tmp[is.na(Number_ultra_rare), Number_ultra_rare := 1]
+                        dt_tmp[is.na(Number_rare), Number_rare := 0]
+                        dt_tmp[, ancestry := i.ancestry]
+                        dt_tmp[, `i.ancestry` := NULL]
+                    }
+                }
+            } else {
+                if ("MAC" %in% names(dt_tmp)) {
+                    # No need to impute - determine estimate directly
+                    cat(paste0(file_info$dataset, ", ", file_info$ancestry, ": No need to impute - determine estimate directly\n"))
+                    dt_tmp[, CAF := MAC / (2*(file_info$n))]
+                } else {
+                    cat(paste0(file_info$dataset, ", ", file_info$ancestry, ": Impute!\n"))
+                    setindexv(dt_tmp, c("Region", "max_MAF", "Group"))
+                    if (ref[ancestry == file_info$ancestry & dataset == file_info$dataset, .N] > 0) {
+                        cat(paste0("using: ", file_info$dataset, ": ", file_info$ancestry, " for imputation\n"))
+                        dt_tmp <- ref[ancestry == file_info$ancestry & dataset == file_info$dataset, ][dt_tmp, on = .(Region, max_MAF, Group)]
+                        dt_tmp[is.na(CAF), CAF := 1 / (2*file_info$n)]
+                        if ("i.Number_rare" %in% names(dt_tmp)) {
+                            dt_tmp[, `:=`(
+                              Number_rare  = i.Number_rare,
+                              Number_ultra_rare = i.Number_ultra_rare
+                            )]
+                            dt_tmp[, c("i.Number_rare", "i.Number_ultra_rare") := NULL]
+                        }
+                        dt_tmp[is.na(Number_ultra_rare), Number_ultra_rare := 1]
+                        dt_tmp[is.na(Number_rare), Number_rare := 0]
+                        dt_tmp[, `:=`(
+                          dataset  = i.dataset,
+                          ancestry = i.ancestry
+                        )]
+                        dt_tmp[, c("i.dataset", "i.ancestry") := NULL]
+                    } else {
+                        cat("No exact match, using largest cohort in the references\n")
+                        dt_tmp <- ref_max[ancestry == file_info$ancestry, ][dt_tmp, on = .(Region, max_MAF, Group)]
+                        dt_tmp[is.na(CAF), CAF := 1 / (2*file_info$n)]
+                        if ("i.Number_rare" %in% names(dt_tmp)) {
+                            dt_tmp[, `:=`(
+                              Number_rare  = i.Number_rare,
+                              Number_ultra_rare = i.Number_ultra_rare
+                            )]
+                            dt_tmp[, c("i.Number_rare", "i.Number_ultra_rare") := NULL]
+                        }
+                        dt_tmp[is.na(Number_ultra_rare), Number_ultra_rare := 1]
+                        dt_tmp[is.na(Number_rare), Number_rare := 0]
+                        dt_tmp[, ancestry := i.ancestry]
+                        dt_tmp[, `i.ancestry` := NULL]
+                    }
+                }
+            }
+        }
+
+        dt_list[[file]] <- dt_tmp
     }
 
     dt <- rbindlist(dt_list, use.names=TRUE, fill=TRUE)
@@ -87,23 +253,49 @@ main <- function(args)
             cat(paste0(test, "...\n"))
             dt_meta[[test]] <- list()
             Pvalue_col <- ifelse(test == "SKAT-O", "Pvalue", paste0("Pvalue_", test))
-            
+
+            if (args$estimate_CAF) {
+                dt_to_test <- dt %>% 
+                    mutate(var=estimate_var(CAF, Number_rare, Number_ultra_rare)) %>% 
+                    mutate(Neff_caf=N_eff*var) %>% 
+                    group_by(Region, Group, max_MAF)
+            } else {
+                dt_to_test <- dt %>% group_by(Region, Group, max_MAF)
+            }
+
             # Weighted Fisher's meta-analysis of p-values
             dt_meta[[test]][["weighted Fisher"]] <- run_weighted_fisher(
-                dt %>% group_by(Region, Group, max_MAF),
-                "N_eff", Pvalue_col, "Pvalue",
+                dt_to_test, "N_eff", Pvalue_col, "Pvalue",
                 two_tail = ifelse(test == "Burden", TRUE, FALSE),
                 input_beta = ifelse(test == "Burden", "BETA_Burden", NULL)) %>% 
             mutate(Stat = NA, type="Weighted Fisher")
 
             # Stouffer's Z - Make sure P-values match, Stat= weighted_Z_Burden_Stouffer
-            dt_meta[[test]][["Stouffer"]] <- run_stouffer(dt %>% group_by(Region, Group, max_MAF),
-                "N_eff", "Stat", Pvalue_col, "Pvalue",
+            dt_meta[[test]][["Stouffer"]] <- run_stouffer(
+                dt_to_test, "N_eff", "Stat", Pvalue_col, "Pvalue",
                 two_tail = ifelse(test == "Burden", TRUE, FALSE),
                 input_beta = ifelse(test == "Burden", "BETA_Burden", NULL)) %>% 
             mutate(type="Stouffer")
             dt_meta[[test]][["Stouffer"]] <- data.table(
                 dt_meta[[test]][["Stouffer"]], key = c("Region", "Group", "max_MAF"))
+
+            if (args$estimate_CAF) {
+                # Weighted Fisher's meta-analysis of p-values
+                dt_meta[[test]][["weighted Fisher CAF"]] <- run_weighted_fisher(
+                    dt_to_test, "Neff_caf", Pvalue_col, "Pvalue",
+                    two_tail = ifelse(test == "Burden", TRUE, FALSE),
+                    input_beta = ifelse(test == "Burden", "BETA_Burden", NULL)) %>% 
+                mutate(Stat = NA, type="Weighted Fisher CAF")
+
+                # Stouffer's Z - Make sure P-values match, Stat= weighted_Z_Burden_Stouffer
+                dt_meta[[test]][["Stouffer CAF"]] <- run_stouffer(
+                    dt_to_test, "Neff_caf", "Stat", Pvalue_col, "Pvalue",
+                    two_tail = ifelse(test == "Burden", TRUE, FALSE),
+                    input_beta = ifelse(test == "Burden", "BETA_Burden", NULL)) %>% 
+                mutate(type="Stouffer CAF")
+                dt_meta[[test]][["Stouffer CAF"]] <- data.table(
+                    dt_meta[[test]][["Stouffer CAF"]], key = c("Region", "Group", "max_MAF"))
+            }
 
             if (test == "Burden") {
                 # And also run the inverse-variance weighted meta-analysis
@@ -170,6 +362,7 @@ main <- function(args)
         # Stouffer's Z - Make sure P-values match, Stat = weighted_Z_Burden_Stouffer
         dt_meta_cauchy[[test]][["Stouffer"]] <- run_stouffer(dt_cauchy[[test]] %>% group_by(Region, Group),
             "N_eff", "Stat", "Pvalue", "Pvalue") %>% mutate(type="Stouffer")
+
         dt_meta_cauchy[[test]] <- rbindlist(dt_meta_cauchy[[test]], use.names=TRUE) %>% mutate(class=test)
     }
     dt_meta_cauchy <- rbindlist(dt_meta_cauchy)
@@ -200,6 +393,10 @@ parser$add_argument("--Neff_weights_file",
     help="File to pass effective sample sizes")
 parser$add_argument("--no_Neff", default=FALSE, action='store_true',
     help="run using Neff estimated from case-control counts rather than the GRM")
+parser$add_argument("--estimate_CAF", default=FALSE, action='store_true',
+    help="Estimate CAF and use in additional weighted Stouffer analysis")
+parser$add_argument("--reference_CAF", default="/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/full_reference_cafs.tsv.gz",
+    help="File containing CAF references to use for imputation for CAF weighted Stouffer", required=FALSE)
 args <- parser$parse_args()
 
 main(args)
