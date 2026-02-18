@@ -64,28 +64,24 @@ setnames(vars_dt,
          old=c("chr_norm","pos_start","pos_end"),
          new=c("seqname","var_start","var_end"))
 
-# create copies to avoid clobbering original names
-loci_intervals <- copy(loci_dt)
-vars_intervals <- copy(vars_dt)
-
 # Set keys for foverlaps
 setkeyv(loci_dt, c("seqname", "locus_start", "locus_end"))
 setkeyv(vars_dt, c("seqname", "var_start", "var_end"))
 
 # if matching by phenotype, ensure column exists
 if (opt$byPhen) {
-  if (!("phenotype" %in% names(loci_intervals))) stop("Loci file must have 'phenotype' column for --byPhen=TRUE")
-  if (!("phenotypeID" %in% names(vars_intervals))) stop("Variants file must have 'phenotypeID' column for --byPhen=TRUE")
+  if (!("phenotype" %in% names(loci_dt))) stop("Loci file must have 'phenotype' column for --byPhen=TRUE")
+  if (!("phenotypeID" %in% names(vars_dt))) stop("Variants file must have 'phenotypeID' column for --byPhen=TRUE")
   # we'll do phenotype-wise joins to be efficient
   message("Matching by phenotype; will join per-phenotype.")
   out_list <- list()
-  phen_list <- intersect(unique(loci_intervals$phenotype), unique(vars_intervals$phenotypeID))
+  phen_list <- intersect(unique(loci_dt$phenotype), unique(vars_dt$phenotypeID))
   if (length(phen_list) == 0) {
     warning("No overlapping phenotypes between loci and variants.")
   }
   for (ph in phen_list) {
-    sub_l <- loci_intervals[phenotype == ph]
-    sub_v <- vars_intervals[phenotypeID == ph]
+    sub_l <- loci_dt[phenotype == ph]
+    sub_v <- vars_dt[phenotypeID == ph]
     if (nrow(sub_l) == 0 || nrow(sub_v) == 0) next
     res <- foverlaps(sub_v, sub_l,
       by.x = c("seqname","var_start","var_end"),
@@ -101,7 +97,7 @@ if (opt$byPhen) {
 } else {
   # match to any locus
   message("Matching variants to any locus (no phenotype constraint).")
-  mapped <- foverlaps(vars_intervals, loci_intervals,
+  mapped <- foverlaps(vars_dt, loci_dt,
     by.x = c("seqname","var_start","var_end"),
     by.y = c("seqname","locus_start","locus_end"),
     nomatch = 0L)
