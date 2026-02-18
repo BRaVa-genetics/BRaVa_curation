@@ -39,7 +39,7 @@ opt <- parse_args(OptionParser(option_list=option_list))
 if (is.null(opt$infile)) stop("Please provide --in <variants.tsv>")
 
 # read input
-dt <- fread(opt$infile, sep = opt$sep)
+dt <- fread(opt$infile, sep = opt$sep, skip="#CHROM")
 required_cols <- c("phenotypeID","#CHROM","POS")
 if (!all(required_cols %in% names(dt))) {
   stop("Input must contain columns: phenotype, chr, pos. Found: ", paste(names(dt), collapse=", "))
