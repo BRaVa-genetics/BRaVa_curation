@@ -119,7 +119,7 @@ abline(0,1, col='red')
 
 # Create an overall reference file
 # label ancestry, sample size, dataset - then use this to do prediction
-ref_files <- grep("reference", dir("manuscript_tables", full.names=TRUE), value=TRUE)
+ref_files <- grep("reference\\.", dir("manuscript_tables", full.names=TRUE), value=TRUE)
 dt_list <- list()
 for (file in ref_files) {
 	dt_list[[file]] <- fread(file)
