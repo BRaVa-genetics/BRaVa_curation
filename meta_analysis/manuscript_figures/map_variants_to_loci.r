@@ -56,19 +56,21 @@ loci_dt <- loci_dt[locus_end >= locus_start]
 vars_dt[, pos_start := as.integer(get("POS"))]
 vars_dt[, pos_end := pos_start]
 
-# use data.table non-equi join via foverlaps
-# foverlaps requires both tables to have columns: chr, start, end, and be keyed by those
-# we'll use chr_norm as the seqname
-setnames(loci_dt, old=c("chr_norm","locus_start","locus_end"), new=c("seqname","start","end"))
-setnames(vars_dt, old=c("chr_norm","pos_start","pos_end"), new=c("seqname","start","end"))
+setnames(loci_dt,
+         old=c("chr_norm","locus_start","locus_end"),
+         new=c("seqname","locus_start","locus_end"))
+
+setnames(vars_dt,
+         old=c("chr_norm","pos_start","pos_end"),
+         new=c("seqname","var_start","var_end"))
 
 # create copies to avoid clobbering original names
 loci_intervals <- copy(loci_dt)
 vars_intervals <- copy(vars_dt)
 
 # Set keys for foverlaps
-setkey(loci_intervals, seqname, start, end)
-setkey(vars_intervals, seqname, start, end)
+setkey(loci_dt, seqname, locus_start, locus_end)
+setkey(vars_dt, seqname, var_start, var_end)
 
 # if matching by phenotype, ensure column exists
 if (opt$byPhen) {
@@ -85,8 +87,10 @@ if (opt$byPhen) {
     sub_l <- loci_intervals[phenotype == ph]
     sub_v <- vars_intervals[phenotypeID == ph]
     if (nrow(sub_l) == 0 || nrow(sub_v) == 0) next
-    res <- foverlaps(sub_v, sub_l, nomatch = 0L) # returns variants matched to loci
-    # res contains variant columns (prefixed if duplicate names) and locus columns
+    res <- foverlaps(sub_v, sub_l,
+      by.x = c("seqname","var_start","var_end"),
+      by.y = c("seqname","locus_start","locus_end"),
+      nomatch = 0L)
     out_list[[ph]] <- res
   }
   if (length(out_list) == 0) {
@@ -97,7 +101,10 @@ if (opt$byPhen) {
 } else {
   # match to any locus
   message("Matching variants to any locus (no phenotype constraint).")
-  mapped <- foverlaps(vars_intervals, loci_intervals, nomatch = 0L)
+  mapped <- foverlaps(vars_intervals, loci_intervals,
+    by.x = c("seqname","var_start","var_end"),
+    by.y = c("seqname","locus_start","locus_end"),
+    nomatch = 0L)
 }
 
 # Post-process: restore original column names and tidy output
@@ -105,24 +112,6 @@ if (nrow(mapped) == 0) {
   message("No variants mapped to loci based on the provided files/criteria.")
   fwrite(data.table(), file = opt$out, sep = "\t")
 } else {
-  # columns from foverlaps: by default returns all columns from x then y (with duplicates)
-  # We'll try to include: variant original cols + locus_id, locus_start, locus_end, locus phenotype (if present), and source file info if present
-  # Identify locus cols present:
-  locus_cols <- c("locus_id","start.y","end.y","phenotype")
-  # the 'locus' start/end may be named 'start' or 'i.start' depending; check names
-  nm <- names(mapped)
-  # find locus start/end present in mapped
-  possible_locus_start <- intersect(c("start.y","start","locus_start"), nm)
-  possible_locus_end <- intersect(c("end.y","end","locus_end"), nm)
-  # select columns to output: original variant cols (from vars_dt) plus locus_id, locus_start, locus_end, phenotype
-  variant_cols <- intersect(names(vars_dt), names(mapped))
-  # prefer common set
-  out_dt <- mapped[, c(variant_cols, intersect(c("locus_id","phenotype"), names(mapped)), possible_locus_start, possible_locus_end), with = FALSE]
-  # rename start/end to locus_start/locus_end for clarity if needed
-  setnames(out_dt, old = possible_locus_start[1], new = "locus_start", skip_absent = TRUE)
-  setnames(out_dt, old = possible_locus_end[1], new = "locus_end", skip_absent = TRUE)
-  # restore original variant chr/pos column names if desired
-  # write out
   fwrite(out_dt, file = opt$out, sep = "\t", na = "NA", quote = FALSE)
   message("Wrote ", nrow(out_dt), " mapped rows to ", opt$out)
 }
