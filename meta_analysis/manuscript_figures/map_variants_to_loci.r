@@ -109,6 +109,6 @@ if (nrow(mapped) == 0) {
   fwrite(data.table(), file = opt$out, sep = "\t")
 } else {
   print(mapped)
-  # fwrite(out_dt, file = opt$out, sep = "\t", na = "NA", quote = FALSE)
-  # message("Wrote ", nrow(out_dt), " mapped rows to ", opt$out)
+  fwrite(mapped, file = opt$out, sep = "\t", na = "NA", quote = FALSE)
+  message("Wrote ", nrow(out_dt), " mapped rows to ", opt$out)
 }
