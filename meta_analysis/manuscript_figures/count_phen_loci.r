@@ -32,7 +32,7 @@ option_list <- list(
   make_option(c("-i","--infile"), type="character", help="Input TSV/CSV file with header (phenotypeID, #CHROM, POS, optional REF,ALT)"),
   make_option(c("-o","--out"), type="character", default=NULL, help="Optional output TSV mapping variants->loci"),
   make_option(c("-w","--window"), type="integer", default=500000, help="Window size in bp (default 500000)"),
-  make_option(c("-s","--sep"), type="character", default=NULL, help="Separator for input file (auto-detected if not provided)")
+  make_option(c("-s","--sep"), type="character", default='\t', help="Separator for input file (auto-detected if not provided)")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
