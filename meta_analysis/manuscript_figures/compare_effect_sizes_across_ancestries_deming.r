@@ -35,7 +35,6 @@ dt_deming <- data.table(
 	Slope = numeric(),
 	`Slope SE` = numeric(),
 	`Slope P-value` = numeric(),
-	# `Slope P-value != 1` = numeric(),
 	`Slope 95% CI` = character(), 
 	Intercept = numeric(),
 	`Intercept SE` = numeric(),
@@ -82,16 +81,15 @@ for (cc in c(TRUE, FALSE)) {
 						Slope = slope,
 						`Slope SE` = se_slope,
 						`Slope P-value` = log10_pval,
-						# `Slope P-value != 1` = log10_pval_1,
 						`Slope 95% CI` = paste0("[",
 							format(round(slope - 1.96*se_slope, 2), nsmall = 2), ", ",
 							format(round(slope + 1.96*se_slope, 2), nsmall = 2), "]"),
 						Intercept = fit$coef[1],
 						`Intercept SE` = fit$se[1],
-						`Intercept P-value` = (
+						`Intercept P-value` = (log10(2) +
 							pnorm(
 								-abs(fit$coef[1]/fit$se[1]),
-								log.p=TRUE)/log(10)),
+								log.p=TRUE)/log(10))),
 						`N pairs` = nrow(dt)
 					)
 				)
@@ -101,5 +99,9 @@ for (cc in c(TRUE, FALSE)) {
 }
 
 dt_deming <- dt_deming %>% filter(`N pairs` > 40)
+dt_deming <- dt_deming %>% mutate(
+	t_stat = (Slope - 1) / `Slope SE`,
+	`Slope = 1, -log(P-value)` =  2 * (1 - pnorm(abs(t_stat))))
+p_value) %>% rename()
 
 fwrite(dt_deming, sep='\t', quote=FALSE, file="../manuscript_tables/Tables/deming_regressions.tsv.gz")

@@ -27,7 +27,7 @@ extract_hits <- function(filename, P_SKAT_cutoff=2.5e-7, P_SKAT_O_cutoff=2.5e-7,
 	return(melted_dt)
 }
 
-dt_gene_hits_all <- list()
+dt_gene_hits_all_list <- list()
 for (i in 1:nrow(file_info)) {
 	cat(paste0(file_info$filename[i], "\n",
 		file_info$dataset[i], "\n",
@@ -40,10 +40,9 @@ for (i in 1:nrow(file_info)) {
 			ancestry = file_info$ancestry[i],
 			sex = file_info$sex[i]
 		)
-	dt_gene_hits_all[[i]] <- melted_dt
+	dt_gene_hits_all_list[[i]] <- melted_dt
 }
 
-dt_gene_hits_all_list <- dt_gene_hits_all
 dt_gene_hits_all <- rbindlist(dt_gene_hits_all_list, fill=TRUE)
 dt_gene_hits_all <- dt_gene_hits_all %>% filter(max_MAF %in% c("0.001", "1e-04"))
 setkeyv(dt_gene_hits_all, c("phenotype", "dataset", "ancestry", "sex"))
@@ -75,6 +74,11 @@ dt_gene_hits_all <- setdiff(dt_gene_hits_all, merge(dt_gene_hits_all, dt_inflati
 dt_gene_hits_all <- dt_gene_hits_all %>% mutate(case_control =
 	ifelse(phenotype %in% case_ctrl, TRUE,
 		ifelse(phenotype %in% cts, FALSE, NA)))
+
+# Write these results
+fwrite(dt_gene_hits_all,
+	file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_in_all_biobanks.tsv.gz",
+	sep='\t', quote=FALSE)
 
 # This is the meta-analysis results
 files <- dir("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100", full.names=TRUE)
@@ -109,14 +113,15 @@ meta_list_unique_no_height <- meta_list %>% filter(hit, phenotype != "Height_ALL
 	filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
 	summarise(count = length(unique(paste(Region, phenotype))))
 
-# Ensure that the phenotypes going through to the plot have been meta-analysed/
+# Ensure that the phenotypes going through to the plot have been meta-analysed
+meta_analysed_traits <- paste0(gsub(".*/([A-Za-z0-9]+)_.*gz", "\\1", files), "_", gsub(".*/[A-Za-z0-9]+_([A-Z]+).*gz", "\\1", files))
 dt_gene_hits <- dt_gene_hits_all  %>% 
-	filter(paste(phenotype, sex, sep="_") %in% unique(meta_list$phenotype)) %>% 
+	filter(paste(phenotype, sex, sep="_") %in% meta_analysed_traits) %>% 
 	group_by(max_MAF, Group, Test, dataset, ancestry) %>% summarise(count = n())
 
 # Damaging, unique (gene, phenotype) pairs, split by dataset and ancestry.
 dt_gene_hits_unique <- dt_gene_hits_all %>% 
-	filter(paste(phenotype, sex, sep="_") %in% unique(meta_list$phenotype)) %>%
+	filter(paste(phenotype, sex, sep="_") %in% meta_analysed_traits) %>%
 	filter(Group %in% c(
 		"pLoF",
 		"pLoF;damaging_missense_or_protein_altering",

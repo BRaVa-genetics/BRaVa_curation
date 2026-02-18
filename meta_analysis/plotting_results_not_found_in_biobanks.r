@@ -303,7 +303,7 @@ for (type in c("binary", "continuous")) {
       cairo_pdf(filename = paste0(out_file, ".pdf"), width = width_in, height = height_in)
       print(p)
       dev.off()
-      ggsave(plot=p, filename=paste0(out_file, ".png"), width = width_in, height = height_in)
+      # ggsave(plot=p, filename=paste0(out_file, ".png"), width = width_in, height = height_in)
     }
   }
 }

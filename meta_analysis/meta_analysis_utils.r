@@ -1186,9 +1186,8 @@ run_inv_var <- function(
 	# Deal with the edge cases
 	# Send the pvalues of the data with infinite standard errors to 1, and the 
 	# pvalues of the data with standard errors of 0 to 0.
-	dt$Pvalue[which(is.na(dt$Pvalue) & (dt$SE_Burden == Inf))] <- 1
-	dt$Pvalue[which(is.na(dt$Pvalue) & (dt$SE_Burden == 0))] <- 0
-
+	dt[[output_meta_pvalue]][is.na(dt[[output_meta_pvalue]]) & is.infinite(dt[[output_se_meta]])] <- 1
+	dt[[output_meta_pvalue]][is.na(dt[[output_meta_pvalue]]) & dt[[output_se_meta]] == 0] <- 0
 	return(dt)
 }
 
