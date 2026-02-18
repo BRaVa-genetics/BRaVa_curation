@@ -69,8 +69,8 @@ loci_intervals <- copy(loci_dt)
 vars_intervals <- copy(vars_dt)
 
 # Set keys for foverlaps
-setkey(loci_dt, seqname, locus_start, locus_end)
-setkey(vars_dt, seqname, var_start, var_end)
+setkeyv(loci_dt, c("seqname", "locus_start", "locus_end"))
+setkeyv(vars_dt, c("seqname", "var_start", "var_end"))
 
 # if matching by phenotype, ensure column exists
 if (opt$byPhen) {
