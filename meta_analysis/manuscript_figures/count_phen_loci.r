@@ -29,17 +29,17 @@ suppressPackageStartupMessages({
 })
 
 option_list <- list(
-  make_option(c("-i","--in"), type="character", help="Input TSV/CSV file with header (phenotypeID, #CHROM, POS, optional REF,ALT)"),
+  make_option(c("-i","--infile"), type="character", help="Input TSV/CSV file with header (phenotypeID, #CHROM, POS, optional REF,ALT)"),
   make_option(c("-o","--out"), type="character", default=NULL, help="Optional output TSV mapping variants->loci"),
   make_option(c("-w","--window"), type="integer", default=500000, help="Window size in bp (default 500000)"),
   make_option(c("-s","--sep"), type="character", default=NULL, help="Separator for input file (auto-detected if not provided)")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
-if (is.null(opt$in)) stop("Please provide --in <variants.tsv>")
+if (is.null(opt$infile)) stop("Please provide --in <variants.tsv>")
 
 # read input
-dt <- fread(opt$in, sep = opt$sep)
+dt <- fread(opt$infile, sep = opt$sep)
 required_cols <- c("phenotypeID","#CHROM","POS")
 if (!all(required_cols %in% names(dt))) {
   stop("Input must contain columns: phenotype, chr, pos. Found: ", paste(names(dt), collapse=", "))
