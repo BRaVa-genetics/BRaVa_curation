@@ -47,6 +47,12 @@ dt_sumstats_cts_summary <- dt_sumstats_cts %>%
 
 # AFR reference - AoU (created already)
 # AMR reference - AoU (created already)
+# Note - this was done as I incorrectly set the CAF - half it. Don't rerun this!
+# aou_files <- grep("/reference.*.all-of-us*", dir("manuscript_tables", full.names=TRUE), value=TRUE)
+# for (f in aou_files) {
+# 	dt <- fread(f) %>% mutate(CAF = CAF/2)
+# 	fwrite(dt, file=f, sep='\t')
+# }
 
 # EAS reference - BBJ or AoU
 info <- dt_sumstats_binary_summary %>% filter(ancestry == "EAS")
