@@ -43,8 +43,8 @@ if (!("#CHROM" %in% names(vars_dt) && "POS" %in% names(vars_dt))) {
 
 # normalize chrom strings (remove leading 'chr' for matching consistency)
 norm_chr <- function(x) sub("^chr", "", as.character(x), ignore.case = TRUE)
-loci_dt[, chr_norm := norm_chr(get("#CHROM"))]
-vars_dt[, chr_norm := norm_chr(get(opt$`chr.col`))]
+loci_dt[, chr_norm := norm_chr(get(opt$`chr.col`))]
+vars_dt[, chr_norm := norm_chr(get("#CHROM"))]
 
 # prepare loci as intervals
 loci_dt[, locus_start := as.integer(locus_start)]
@@ -83,7 +83,7 @@ if (opt$byPhen) {
   }
   for (ph in phen_list) {
     sub_l <- loci_intervals[phenotype == ph]
-    sub_v <- vars_intervals[phenotype == ph]
+    sub_v <- vars_intervals[phenotypeID == ph]
     if (nrow(sub_l) == 0 || nrow(sub_v) == 0) next
     res <- foverlaps(sub_v, sub_l, nomatch = 0L) # returns variants matched to loci
     # res contains variant columns (prefixed if duplicate names) and locus columns
