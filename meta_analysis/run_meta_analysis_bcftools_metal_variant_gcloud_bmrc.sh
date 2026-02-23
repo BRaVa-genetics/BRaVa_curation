@@ -11,8 +11,10 @@ export BCFTOOLS_PLUGINS="$HOME/bin"
 FILES_VARIANT=$1
 FILES_VARIANT=$(echo "$FILES_VARIANT" | tr ',' ' ')
 OUT=$2
+OUT_COMMON="${OUT%.vcf.gz}_common.vcf.gz"
 
 REGION_FILE="/well/lindgren/dpalmer/protein_coding_regions_hg38_no_padding_no_UTR_v39.bed"
 
 echo "bcftools +metal --het --esd -Oz -o $OUT -e 'AF>0.001 & AF<0.999' -R $REGION_FILE $FILES_VARIANT"
 bcftools +metal --het --esd -Oz -o $OUT -e 'AF>0.001 & AF<0.999' -R $REGION_FILE $FILES_VARIANT
+bcftools +metal --het --esd -Oz -o $OUT_COMMON -e 'AF>0.01 & AF<0.99' -R $REGION_FILE $FILES_VARIANT
