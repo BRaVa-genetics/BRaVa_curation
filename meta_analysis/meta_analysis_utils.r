@@ -716,7 +716,8 @@ case_ctrl <- c(
 	"Urolith",
 	"UterCanc",
 	"VaricVeins",
-	"VTE"
+	"VTE",
+	"HipRep"
 )
 
 cts <- c(
@@ -735,7 +736,6 @@ cts <- c(
 	"WHRBMI",
 	"LVH",
 	"Append",
-	"HipRep",
 	"CogAbil",
 	"EduAtt",
 	"PsySymp",

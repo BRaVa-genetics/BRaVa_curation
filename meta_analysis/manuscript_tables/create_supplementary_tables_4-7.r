@@ -18,7 +18,7 @@ file_info <- rbindlist(lapply(files, extract_file_info), fill=TRUE)
 file_info <- file_info %>% filter(phenotype %in% 
 	c("AFib", "AMD", "AST", "Asth", "BenCervUterNeo", "BenIntNeo",
 	"BMI", "BreastCanc", "CAD", "CervCanc", "ColonRectCanc", "COPD",
-	"CRF", "CRP", "EFRMB", "FemInf","Gout", "HDLC", "Height", "HF",
+	"CRF", "CRP", "EFRMB", "FemInf","Gout", "HDLC", "HF", # "Height", (height not included)
 	"HTN", "IBD", "IFHern", "ILDSarc", "LDLC", "MatHem", "NonRheuValv",
 	"PAD", "Pancreat", "PeptUlcer", "Psori", "RheumArth", "RheumHeaDis",
 	"Stroke", "T2Diab", "TChol", "TG", "Urolith", "VaricVeins", "VTE",

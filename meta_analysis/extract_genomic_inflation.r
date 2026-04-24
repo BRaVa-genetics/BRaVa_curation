@@ -25,7 +25,7 @@ main <- function(args)
 			"IFHern", "ILDSarc", "MatHem", "NonRheuValv", "Pancreat",
 			"PeptUlcer", "PAD", "Psori", "RheumHeaDis", "RheumArth",
 			"Stroke", "T2Diab", "Urolith", "VaricVeins", "VTE", "ALT",
-			"AlcCons", "AST", "BMI", "CRP", "HDLC", "Height", "LDLC",
+			"AlcCons", "AST", "BMI", "CRP", "HDLC", "LDLC", "Height",
 			"TChol", "TG", "WHRBMI", "HipRep")
 	dt <- dt %>% filter(phenotype %in% phes)
 	dt_list <- list()
