@@ -208,7 +208,7 @@ for (i in 1:length(file_root)) {
 		p$p <- p$p + geom_label_repel(
 			data = unique(
 				subset(p$dt, y > threshold) %>%
-					group_by(labels) %>% 
+					group_by(labels, phenotype_category) %>% 
 					slice_max(y, n = 1, with_ties = FALSE)
 			) %>% ungroup(),
 			size = 2, aes(label=labels),
