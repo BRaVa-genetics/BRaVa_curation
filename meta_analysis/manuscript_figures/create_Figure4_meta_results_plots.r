@@ -2,8 +2,8 @@
 library(data.table)
 library(dplyr)
 library(ggplot2)
-devtools::install_github("mkanai/rgsutil")
-library(rgsutil)
+# devtools::install_github("mkanai/rgsutil")
+# library(rgsutil)
 source("../meta_analysis_utils.r")
 source("../../QC/utils/pretty_plotting.r")
 
@@ -160,6 +160,7 @@ for (i in 1:length(file_root)) {
 			file_root[i], "_figure_4.tsv.gz")) %>%
 	filter(phenotype != "Height")
 	meta_list <- meta_list %>% mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype]))
+	meta_list <- meta_list %>% mutate(external_gene_name = ifelse(is.na(external_gene_name), ensembl_gene_id, external_gene_name))
 	# Create the Burden, SKAT, and SKAT-O versions
 	# Do the same thing, but split by case-control vs cts (way more power for cts).
 	for (cc in c(TRUE, FALSE)) {
@@ -219,6 +220,9 @@ for (i in 1:length(file_root)) {
 	meta_list <- fread(
 		paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/",
 			file_root[i], "_figure_4.tsv.gz"))
+	meta_list <- meta_list %>% mutate(
+		external_gene_name = ifelse(is.na(external_gene_name), ensembl_gene_id, external_gene_name))
+
 	for (phe in unique(meta_list$phenotype)) {
 		cat(phe, "\n")
 		meta_list_tmp <- meta_list %>% filter(phenotype == phe)
