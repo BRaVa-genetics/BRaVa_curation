@@ -125,7 +125,7 @@ dt_inflation <- fread(
 	"/well/lindgren/dpalmer/BRaVa_meta-analysis_inputs/inflation_summaries.tsv.gz")
 dt_inflation <- unique(dt_inflation %>% filter(Group == "synonymous") %>% 
 	filter(max_MAF != 0.01, lambda_value > 1.3) %>% 
-	select(phenotype, dataset, ancestry, sex))
+	dplyr::select(phenotype, dataset, ancestry, sex))
 # Manual curation, adding the following (biobank, trait) tuples containing spurious 
 # associations
 dt_inflation <- rbind(dt_inflation, data.table(
@@ -191,14 +191,14 @@ meta_list <- meta_list %>% filter(!is.na(Pvalue)) %>%
 meta_cauchy <- run_cauchy(meta_list %>% group_by(Region, phenotype), "weights", "Cauchy_stat", "Pvalue", "Cauchy_Pvalue")
 meta_cauchy <- meta_cauchy %>% mutate(hit = (Cauchy_Pvalue < 2.5e-6))
 
-meta_list <- meta_list %>% rename(ensembl_gene_id = Region)
+meta_list_hit <- meta_list %>% rename(ensembl_gene_id = Region)
 setkey(meta_list, "ensembl_gene_id")
-meta_list <- merge(gene_info, meta_list, all.y=TRUE)
+meta_list_hit <- merge(gene_info, meta_list, all.y=TRUE)
 
-meta_cauchy <- meta_cauchy %>% rename(ensembl_gene_id = Region)
-setDT(meta_cauchy)
-setkey(meta_cauchy, "ensembl_gene_id")
-meta_cauchy <- merge(gene_info, meta_cauchy, all.y=TRUE)
+meta_cauchy_hit <- meta_cauchy %>% rename(ensembl_gene_id = Region)
+setDT(meta_cauchy_hit)
+setkey(meta_cauchy_hit, "ensembl_gene_id")
+meta_cauchy_hit <- merge(gene_info, meta_cauchy_hit, all.y=TRUE)
 
 # Write the results
 fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_full_meta_051125.tsv.gz",

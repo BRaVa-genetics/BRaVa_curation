@@ -360,9 +360,9 @@ phenotype_class <- list(
 		"PolycythVera","Preeclamps","PregLoss","POAG","PrimSjoSynd","Prolactinom",
 		"Psori","RheumHeaDis","RheumArth","RomWardSynd","Sarcoid","SebDerm",
 		"SpinaBifAp","StomCanc","Stroke","SLE","TAAD","ThyroCanc","T2Diab","Urolith",
-		"UterCanc","VaricVeins","VTE"),
+		"UterCanc","VaricVeins","VTE", "HipRep"),
 	continuous = c("ALT", "AlcCons", "AST","BMI","CRP","CACS","CK","HDLC","Height",
-		"LDLC","TChol","TG","WHRBMI", "LVH","Append","HipRep","CogAbil","EduAtt",
+		"LDLC","TChol","TG","WHRBMI", "LVH","Append","CogAbil","EduAtt",
 		"PsySymp","SchGrades","SCDCAT")
 )
 
