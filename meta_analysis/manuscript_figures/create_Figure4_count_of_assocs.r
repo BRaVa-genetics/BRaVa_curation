@@ -44,10 +44,10 @@ max_MAFs_for_cauchy <- c(1e-4, 1e-3)
 extract_cauchy <- function(filename, Cauchy_cutoff = 2.5e-6) {
 	dt <- fread(filename) %>% filter(Group %in% groups_for_cauchy, max_MAF %in% max_MAFs_for_cauchy)
 	melted_dt <- rbind(
-		dt %>% select(-c("Pvalue_SKAT", "Pvalue_Burden")) %>% mutate(Test = "Pvalue"),
-		dt %>% select(-c("Pvalue", "Pvalue_Burden")) %>% rename(Pvalue = Pvalue_SKAT) %>% 
+		dt %>% dplyr::select(-c("Pvalue_SKAT", "Pvalue_Burden")) %>% mutate(Test = "Pvalue"),
+		dt %>% dplyr::select(-c("Pvalue", "Pvalue_Burden")) %>% rename(Pvalue = Pvalue_SKAT) %>% 
 			mutate(Test = "Pvalue_SKAT"),
-		dt %>% select(-c("Pvalue_SKAT", "Pvalue")) %>% rename(Pvalue = Pvalue_Burden) %>% 
+		dt %>% dplyr::select(-c("Pvalue_SKAT", "Pvalue")) %>% rename(Pvalue = Pvalue_Burden) %>% 
 			mutate(Test = "Pvalue_Burden")
 		) %>% mutate(weights = 1)
 	melted_dt <- melted_dt %>% filter(!is.na(Pvalue)) %>% 
@@ -64,12 +64,12 @@ extract_hits <- function(filename, P_SKAT_cutoff=(0.05/20000)/(3*3*2),
 		(Pvalue_SKAT < P_SKAT_cutoff) |
 		(Pvalue_Burden < P_Burden_cutoff))
 	melted_dt <- rbind(
-		dt %>% select(-c("Pvalue_SKAT", "Pvalue_Burden")) %>% 
+		dt %>% dplyr::select(-c("Pvalue_SKAT", "Pvalue_Burden")) %>% 
 			mutate(Test = "Pvalue") %>% filter(Pvalue < P_SKAT_O_cutoff),
-		dt %>% select(-c("Pvalue", "Pvalue_Burden")) %>%
+		dt %>% dplyr::select(-c("Pvalue", "Pvalue_Burden")) %>%
 			rename(Pvalue = Pvalue_SKAT) %>% mutate(Test = "Pvalue_SKAT") %>%
 			filter(Pvalue < P_SKAT_cutoff),
-		dt %>% select(-c("Pvalue_SKAT", "Pvalue")) %>%
+		dt %>% dplyr::select(-c("Pvalue_SKAT", "Pvalue")) %>%
 			rename(Pvalue = Pvalue_Burden) %>% mutate(Test = "Pvalue_Burden") %>%
 			filter(Pvalue < P_Burden_cutoff)
 		)
