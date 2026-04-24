@@ -206,7 +206,7 @@ for (i in 1:length(file_root)) {
 			data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
 				filter(y == max(y))) %>% ungroup(),
 			size = 2, aes(label=labels),
-			color='grey30', box.padding = 0.2, force = 0.3,
+			color='grey30', box.padding = 0.2, force = 1,
 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
 			min.segment.length=0)
 		ggsave(filename=paste0("Figures/", file, '_categories.pdf'), p$p, width=width*scaling, height=height*scaling, units='mm')
@@ -229,7 +229,7 @@ for (i in 1:length(file_root)) {
 		p <- make_manhattan_plot(meta_list_tmp$chromosome_name,
 			meta_list_tmp$start_position,
 			meta_list_tmp$Pvalue,
-			threshold=1000, significance_T = 6.7e-7,
+			threshold=1000, significance_T = significance_T1,
 			label=meta_list_tmp$external_gene_name, 
 			colour_1 = "#6583E6",
 			colour_2 = "#384980",
