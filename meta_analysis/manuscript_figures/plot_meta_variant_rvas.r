@@ -655,3 +655,54 @@ for (anc in c("all", "EUR", "just_uk-biobank_and_all-of-us")) {
 #  	print(p)
 # }
 
+meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/manhattan_plots_up_to_0.01.tsv.gz")
+significance_T <- 8e-9
+
+for (phe in unique(meta_list$phenotype)) {
+	cat(paste0(phe, "..."))
+	dt_tmp <- meta_list[phenotype==phe,]
+	dt_tmp[, CHR := gsub("chr", "", CHR)]
+	dt_label <- annotate_with_gene_names(dt_tmp %>%
+			dplyr::rename(contig = CHR, position=POS, pval=`P-value`),
+			return_binned=FALSE, significance_T = 1e-6) %>% 
+			mutate(y=-pval)
+
+	if (nrow(dt_label) == 0) next
+
+	if (ifelse(dt_tmp$type[1] == "binary", FALSE, TRUE)) {
+		dt_label$y <- loglog_trans(dt_label$y)
+	}
+
+	dt_label <- data.table(dt_label %>% group_by(ID) %>% 
+		slice_min(pval, with_ties = FALSE) %>% ungroup())
+	
+	p <- make_manhattan_plot(dt_tmp$CHR,
+			dt_tmp$POS,
+			-dt_tmp$`P-value`,
+			threshold=1000,
+			significance_T = significance_T,
+			label=NULL, 
+			colour_1 = "#6583E6",
+			colour_2 = "#384980",
+			loglog=ifelse(dt_tmp$type[1] == "binary", FALSE, TRUE),
+			log_p_vals=TRUE)
+
+	p$dt <- data.table(p$dt)
+	setkeyv(p$dt, c("contig", "position", "y"))
+	setkeyv(dt_label, c("contig", "position", "y"))
+	dt_label <- merge(p$dt, dt_label)
+
+	p$p <- p$p + geom_label_repel(
+		data = dt_label,
+		size = 3, aes(label=external_gene_name),
+		color='grey30', box.padding = 0.2, force = 1,
+		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
+		min.segment.length=0, segment.size = 0.5, segment.alpha = 0.8,)
+		width <- 150
+		height <- 80
+		scaling <- 1
+	file <- paste0(phe, "_meta_analysis_variant")
+	ggsave(paste0("Figures/", file, ".png"), p$p,
+		width=width*scaling, height=height*scaling, units='mm')
+	print("done creating!")
+}

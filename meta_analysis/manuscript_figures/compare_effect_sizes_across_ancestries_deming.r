@@ -89,7 +89,7 @@ for (cc in c(TRUE, FALSE)) {
 						`Intercept P-value` = (log10(2) +
 							pnorm(
 								-abs(fit$coef[1]/fit$se[1]),
-								log.p=TRUE)/log(10))),
+								log.p=TRUE)/log(10)),
 						`N pairs` = nrow(dt)
 					)
 				)
@@ -102,6 +102,5 @@ dt_deming <- dt_deming %>% filter(`N pairs` > 40)
 dt_deming <- dt_deming %>% mutate(
 	t_stat = (Slope - 1) / `Slope SE`,
 	`Slope = 1, -log(P-value)` =  2 * (1 - pnorm(abs(t_stat))))
-p_value) %>% rename()
 
 fwrite(dt_deming, sep='\t', quote=FALSE, file="../manuscript_tables/Tables/deming_regressions.tsv.gz")

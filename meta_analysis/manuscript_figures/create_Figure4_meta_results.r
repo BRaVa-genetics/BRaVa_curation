@@ -38,17 +38,6 @@ gene_info <- getBM(attributes = c(
 # Display the first few rows of the result
 gene_info <- data.table(gene_info, key = "ensembl_gene_id")
 
-# Download the results files using Masa's rgsutil
-# file_paths <- c(
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/meta-analysis/",
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/AFR/",
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/AMR/",
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/EAS/",
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/EUR/",
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/SAS/",
-# 	"gs://brava-meta-pilot-analysis/pilot-traits-may-2025-freeze-meta-analysis/gene/n_cases_100/non_EUR/"
-# )
-
 file_paths <- c(
 	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100",
 	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/gene/n_cases_100/AFR",
@@ -87,7 +76,8 @@ for (i in 1:length(file_paths)) {
 		filter(
 			((class == "Burden") & (type == "Inverse variance weighted")) | 
 			((class != "Burden") & (type == "Stouffer"))) %>%
-		mutate(phenotype = phenotype) %>% group_by(Region, phenotype) %>% filter(Pvalue == min(Pvalue))
+		mutate(phenotype = phenotype) %>% 
+			group_by(Region, phenotype) %>% filter(Pvalue == min(Pvalue))
 	}
 
 	meta_list <- rbindlist(meta_list) %>% rename(ensembl_gene_id = Region)
@@ -96,7 +86,8 @@ for (i in 1:length(file_paths)) {
 	meta_list <- meta_list %>% filter(chromosome_name %in% c(seq(1,22), "X"))
 
 	# Remove the mosaic genes:
-	meta_list <- meta_list %>% filter(!ensembl_gene_id %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))
+	meta_list <- meta_list %>% 
+		filter(!ensembl_gene_id %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))
 	meta_list <- meta_list %>% mutate(Pvalue = ifelse(Pvalue == 0, 1e-320, Pvalue))
 	meta_list <- meta_list %>% mutate(phenotype = gsub("_.*", "", phenotype))
 	meta_list <- meta_list %>% mutate(
@@ -105,5 +96,6 @@ for (i in 1:length(file_paths)) {
 
 	# Write the information to disk, to speed up recreation of the plots.
 	fwrite(meta_list, quote=FALSE, sep='\t',
-		file=paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/", file_root[i], "_figure_4.tsv.gz"))
+		file=paste0("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/", file_root[i],
+			"_figure_4.tsv.gz"))
 }
