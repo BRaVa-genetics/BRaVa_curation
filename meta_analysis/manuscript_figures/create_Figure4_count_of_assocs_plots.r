@@ -85,7 +85,7 @@ p <- ggplot(plot_unique %>% filter(!case_control),
 		x = NULL,
 		y = "Number of unique\n(gene, trait) associations",
 		fill = "Genetic\nancestry",
-		# title = paste0("Continuous traits (N=", n_cts, ")")
+		title = paste0("Continuous traits (N=", n_cts, ")")
 	)
 print(p)
 dev.off()
