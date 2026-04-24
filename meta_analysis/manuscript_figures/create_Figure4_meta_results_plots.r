@@ -189,6 +189,7 @@ for (i in 1:length(file_root)) {
 					slice_max(y, n = 1, with_ties = FALSE)
 				) %>% ungroup(),
 			size = 3, aes(label=labels),
+			fontface = "italic",
 			color='grey30', box.padding = 0.2, force = 1,
 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
 			min.segment.length=0)
@@ -212,6 +213,7 @@ for (i in 1:length(file_root)) {
 					slice_max(y, n = 1, with_ties = FALSE)
 			) %>% ungroup(),
 			size = 2, aes(label=labels),
+			fontface = "italic",
 			color='grey30', box.padding = 0.2, force = 1,
 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
 			min.segment.length=0)
@@ -259,6 +261,7 @@ for (i in 1:length(file_root)) {
 			p$p <- p$p + geom_label_repel(
 				data = gene_labels_to_plot,
 				aes(label = labels),
+				fontface = "italic",
 				size = 3,
 				color = "grey30",
 				label.padding = 0.1,
