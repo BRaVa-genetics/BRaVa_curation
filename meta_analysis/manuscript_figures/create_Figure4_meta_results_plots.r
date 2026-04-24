@@ -2,8 +2,8 @@
 library(data.table)
 library(dplyr)
 library(ggplot2)
-devtools::install_github("mkanai/rgsutil")
-library(rgsutil)
+# devtools::install_github("mkanai/rgsutil")
+# library(rgsutil)
 source("../meta_analysis_utils.r")
 source("../../QC/utils/pretty_plotting.r")
 
