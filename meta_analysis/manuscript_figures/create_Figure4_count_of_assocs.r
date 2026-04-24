@@ -183,22 +183,24 @@ for (file in files) {
 meta_list <- rbindlist(meta_list) %>% mutate(case_control =
 	ifelse(gsub("_.*", "", phenotype) %in% case_ctrl, TRUE,
 		ifelse(gsub("_.*", "", phenotype) %in% cts, FALSE, NA)))
-
 meta_list <- meta_list %>% filter(!is.na(Pvalue)) %>% 
 	filter((class == "Burden" & type == "Inverse variance weighted") |
 		(class %in% c("SKAT", "SKAT-O") & type == "Stouffer")) %>%
 	mutate(Pvalue = ifelse(Pvalue > 0.99, 0.99, Pvalue), weights = 1)
 meta_cauchy <- run_cauchy(meta_list %>% group_by(Region, phenotype), "weights", "Cauchy_stat", "Pvalue", "Cauchy_Pvalue")
-meta_cauchy <- meta_cauchy %>% mutate(hit = (Cauchy_Pvalue < 2.5e-6))
+meta_cauchy <- meta_cauchy %>% mutate(
+	hit = (Cauchy_Pvalue < 2.5e-6),
+	case_control = ifelse(gsub("_.*", "", phenotype) %in% case_ctrl, TRUE,
+		ifelse(gsub("_.*", "", phenotype) %in% cts, FALSE, NA)))
 
-meta_list_hit <- meta_list %>% rename(ensembl_gene_id = Region)
+meta_list <- meta_list %>% rename(ensembl_gene_id = Region)
 setkey(meta_list, "ensembl_gene_id")
-meta_list_hit <- merge(gene_info, meta_list, all.y=TRUE)
+meta_list <- merge(gene_info, meta_list, all.y=TRUE)
 
-meta_cauchy_hit <- meta_cauchy %>% rename(ensembl_gene_id = Region)
-setDT(meta_cauchy_hit)
-setkey(meta_cauchy_hit, "ensembl_gene_id")
-meta_cauchy_hit <- merge(gene_info, meta_cauchy_hit, all.y=TRUE)
+meta_cauchy <- meta_cauchy %>% rename(ensembl_gene_id = Region)
+setDT(meta_cauchy)
+setkey(meta_cauchy, "ensembl_gene_id")
+meta_cauchy <- merge(gene_info, meta_cauchy, all.y=TRUE)
 
 # Write the results
 fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_full_meta_051125.tsv.gz",
@@ -206,7 +208,10 @@ fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_asso
 fwrite(file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_cauchy_assocs_from_full_meta_051125.tsv.gz",
 	meta_cauchy %>% filter(hit), sep='\t', quote=FALSE)
 
-extract_hit_counts_for_figure <- function(biobank_hits, meta) {
+meta_list <- meta_list %>% rename(Region = ensembl_gene_id)
+meta_cauchy <- meta_cauchy %>% rename(Region = ensembl_gene_id)
+
+extract_hit_counts_for_figure <- function(biobank_hits, meta, cauchy=FALSE) {
 
 	meta_unique <- meta %>% filter(hit) %>% group_by(case_control) %>% 
 		filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456"))) %>%
@@ -222,12 +227,15 @@ extract_hit_counts_for_figure <- function(biobank_hits, meta) {
 
 	# Damaging, unique (gene, phenotype) pairs, split by dataset and ancestry.
 	dt_gene_hits_unique <- biobank_hits %>% 
-		filter(paste(phenotype, sex, sep="_") %in% meta_analysed_traits) %>%
-		filter(Group %in% c(
-			"pLoF",
-			"pLoF;damaging_missense_or_protein_altering",
-			"damaging_missense_or_protein_altering")
-		) %>% group_by(dataset, ancestry, case_control) %>% 
+		filter(paste(phenotype, sex, sep="_") %in% meta_analysed_traits)
+	if (!cauchy) {
+		dt_gene_hits_unique <- dt_gene_hits_unique %>%
+			filter(Group %in% c(
+				"pLoF",
+				"pLoF;damaging_missense_or_protein_altering",
+				"damaging_missense_or_protein_altering"))
+	}
+	dt_gene_hits_unique <- dt_gene_hits_unique %>% group_by(dataset, ancestry, case_control) %>% 
 		filter(!(Region %in% c("ENSG00000168769", "ENSG00000119772", "ENSG00000171456")))
 
 	dt_gene_hits_unique_no_height <- dt_gene_hits_unique %>% 
@@ -238,14 +246,14 @@ extract_hit_counts_for_figure <- function(biobank_hits, meta) {
 
 	plot_unique <- rbind(
 		dt_gene_hits_unique %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset])),
-		meta_list_unique %>% mutate(ancestry = "Meta", dataset = "Meta")
+		meta_unique %>% mutate(ancestry = "Meta", dataset = "Meta")
 		)
 	plot_unique$dataset <- factor(plot_unique$dataset,
 		levels = c(sort(setdiff(unique(plot_unique$dataset), "Meta")), "Meta"))
 
 	plot_unique_no_height <- rbind(
 		dt_gene_hits_unique_no_height %>% mutate(dataset = unlist(renaming_plot_biobank_list[dataset])),
-		meta_list_unique_no_height %>% mutate(ancestry = "Meta", dataset = "Meta")
+		meta_unique_no_height %>% mutate(ancestry = "Meta", dataset = "Meta")
 		)
 	plot_unique_no_height$dataset <- factor(plot_unique_no_height$dataset,
 		levels = c(sort(setdiff(unique(plot_unique_no_height$dataset), "Meta")), "Meta"))
@@ -254,7 +262,7 @@ extract_hit_counts_for_figure <- function(biobank_hits, meta) {
 }
 
 tables_for_plots <- extract_hit_counts_for_figure(dt_gene_hits_all, meta_list)
-tables_for_plots_cauchy <- extract_hit_counts_for_figure(dt_gene_cauchy_hits_all, meta_cauchy)
+tables_for_plots_cauchy <- extract_hit_counts_for_figure(dt_gene_cauchy_hits_all, meta_cauchy, cauchy=TRUE)
 
 fwrite(tables_for_plots$including_height, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_data.tsv.gz", sep='\t', quote=FALSE)
 fwrite(tables_for_plots$excluding_height, file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/plot_unique_hits_no_height_data.tsv.gz", sep='\t', quote=FALSE)
