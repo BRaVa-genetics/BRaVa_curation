@@ -184,12 +184,12 @@ for (i in 1:length(file_root)) {
 
 		p$p <- p$p + geom_label_repel(
 			data = unique(
-				subset(p$dt, y > threshold) %>%
+				subset(p$dt, y > transform_y(threshold)) %>%
 					group_by(labels) %>% 
 					slice_max(y, n = 1, with_ties = FALSE)
 				) %>% ungroup(),
 			size = 3, aes(label=labels),
-			color='grey30', box.padding = 0.2, force = 0.3,
+			color='grey30', box.padding = 0.2, force = 1,
 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
 			min.segment.length=0)
 		width <- 230
