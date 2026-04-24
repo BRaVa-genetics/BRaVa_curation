@@ -183,8 +183,11 @@ for (i in 1:length(file_root)) {
 		}
 
 		p$p <- p$p + geom_label_repel(
-			data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
-				filter(y == max(y))) %>% ungroup(),
+			data = unique(
+				subset(p$dt, y > threshold) %>%
+					group_by(labels) %>% 
+					slice_max(y, n = 1, with_ties = FALSE)
+				) %>% ungroup(),
 			size = 3, aes(label=labels),
 			color='grey30', box.padding = 0.2, force = 0.3,
 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
@@ -203,8 +206,11 @@ for (i in 1:length(file_root)) {
 			scaling=scaling, width=width, height=height, save_figure=FALSE,
 			significance_T1=significance_T1, significance_T2=significance_T2, loglog=loglog)
 		p$p <- p$p + geom_label_repel(
-			data = unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
-				filter(y == max(y))) %>% ungroup(),
+			data = unique(
+				subset(p$dt, y > threshold) %>%
+					group_by(labels) %>% 
+					slice_max(y, n = 1, with_ties = FALSE)
+			) %>% ungroup(),
 			size = 2, aes(label=labels),
 			color='grey30', box.padding = 0.2, force = 1,
 			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
