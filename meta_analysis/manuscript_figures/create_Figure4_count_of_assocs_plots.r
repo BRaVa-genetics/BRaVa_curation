@@ -53,6 +53,7 @@ for (cc in c(TRUE, FALSE)) {
 				)
 			)
 	print(p)
+	dev.off()
 }
 
 plot_unique <- fread(
