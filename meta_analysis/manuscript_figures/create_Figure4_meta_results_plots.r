@@ -175,7 +175,6 @@ for (i in 1:length(file_root)) {
 			colour_2 = "#384980",
 			loglog=TRUE)
 
-		# p$p <- p$p + geom_hline(yintercept=-log10(significance_T2), color='black', linetype='dashed')
 		threshold <- ifelse(cc, 10, 50)
 
 		if (nrow(p$dt %>% filter(y > transform_y(threshold))) < 20) {
@@ -246,18 +245,13 @@ for (i in 1:length(file_root)) {
 		p$dt <- p$dt %>% mutate(y = ifelse(y > 300, 300, y))
 		threshold <- -log10(significance_T1)
 
-		if (any(p$dt$y > threshold)) {
-			gene_labels_to_plot <- unique(subset(p$dt, y > threshold) %>% group_by(labels) %>% 
+		if (any(p$dt$y > tranform_y(threshold))) {
+			gene_labels_to_plot <- unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
 					filter(y == max(y))) %>% ungroup()
 			cat(paste0("number of significant genes: ", nrow(gene_labels_to_plot), "\n"))
 			if (nrow(gene_labels_to_plot) > 50) {
 				gene_labels_to_plot <- gene_labels_to_plot %>% slice_max(y, n=50)
 			}
-			# p$p <- p$p + geom_label_repel(
-			# 	data = gene_labels_to_plot,
-			# 	size = 3, aes(label=labels),
-			# 	color='grey30', box.padding = 0.2, force = 0.3,
-			# 	label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50')
 			p$p <- p$p + geom_label_repel(
 				data = gene_labels_to_plot,
 				aes(label = labels),
