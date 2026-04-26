@@ -15,9 +15,11 @@ files_list <- c("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_ca
 	"/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/n_cases_100/non_EUR")
 
 meta_list <- list()
+max_variants_tested <- 0
 for (file in files_list) {
 	files <- dir(file, full.names=TRUE)
 	files <- grep(".vcf.gz$", files, value=TRUE)
+	files <- files[-grep("_common.", files)]
 	print(files)
 	meta_list[[file]] <- list()
 
@@ -37,6 +39,11 @@ for (file in files_list) {
 		}
 		dt <- data.table(dt) %>% filter(!is.na(`P-value`))
 		setkey(dt, "P-value")
+		n_variants <- nrow(dt)
+		cat(paste0(n_variants, "..."))
+		if (n_variants > max_variants_tested) {
+			max_variants_tested <- n_variants
+		}
 		# Filter dt remove variants on a sliding scale if the P-value is > 0.01
 		dt <- dt %>% mutate(remove = ifelse(`P-value` < -2, FALSE, runif(n()) < 10^(`P-value`/2)))
 		dt <- dt %>% filter(!remove) %>% select(-remove)

@@ -1039,6 +1039,7 @@ determine_null_correlation <- function(dt, ref, pval_T=0.05, binary=TRUE)
 
 cauchy_combination <- function(p_values, weights=NULL)
 {
+	p_values <- pmin(pmax(p_values, 1e-300), 1 - 1e-14)
 	is.zero <- sum(p_values == 0) >= 1
 	is.one <- sum(p_values > (1 - 1e-14)) >= 1
 

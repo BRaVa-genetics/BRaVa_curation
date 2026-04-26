@@ -27,10 +27,10 @@ for (file in files_list)
 			Group %in% c(
 				"damaging_missense_or_protein_altering",
 				"pLoF",
-				"pLoF;damaging_missense_or_protein_altering")) %>%
-		mutate(phenotype = phenotype) %>% filter(
-			(Pvalue < 6.7e-7 & class == "Burden" & type == "Inverse variance weighted") |
-			(Pvalue < 2.5e-7 & class %in% c("SKAT", "SKAT-O") & type == "Stouffer"))
+				"pLoF;damaging_missense_or_protein_altering"),
+			((class == "Burden" & type == "Inverse variance weighted") |
+			 (class %in% c("SKAT", "SKAT-O") & type == "Stouffer"))) %>%
+		mutate(phenotype = phenotype) %>% mutate(hit = Pvalue < ((0.05/20000)/(2*3*3)))
 	}
 	meta_list[[file]] <- rbindlist(meta_list[[file]])
 }
@@ -41,5 +41,13 @@ for (anc in names(meta_list)) {
 }
 meta <- rbindlist(meta_list)
 
-fwrite(meta, sep = "\t", quote=FALSE,
+fwrite(meta %>% filter(hit), sep = "\t", quote=FALSE,
 	file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_assocs_from_all_meta_subsets_101025.tsv.gz")
+
+meta <- meta %>% filter(!is.na(Pvalue)) %>%
+	mutate(Pvalue = ifelse(Pvalue > 0.99, 0.99, Pvalue), weights = 1)
+meta_cauchy <- run_cauchy(meta %>% group_by(Region, phenotype, ancestry), "weights", "Cauchy_stat", "Pvalue", "Cauchy_Pvalue")
+meta_cauchy <- meta_cauchy %>% mutate(hit = Cauchy_Pvalue < 2.5e-6)
+
+fwrite(meta_cauchy %>% filter(hit), sep = "\t", quote=FALSE,
+	file="/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/significant_cauchy_assocs_from_all_meta_subsets_101025.tsv.gz")

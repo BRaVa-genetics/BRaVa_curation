@@ -11,7 +11,8 @@ library(GenomicRanges)
 source("../meta_analysis_utils.r")
 source("../../QC/utils/pretty_plotting.r")
 
-significance_T <- 8.0e-9
+# significance_T <- 8.0e-9
+significance_T <- 0.05/2746957
 loglog <- TRUE
 
 # gawk '$3 == "gene"' Homo_sapiens.GRCh38.114.gtf |
@@ -21,6 +22,7 @@ loglog <- TRUE
 #     print a[1] "\t" $1 "\t" $4 "\t" $5 "\t" b[1]
 # }' > all_genes.tsv
 genes_gtf_path <- "all_genes.tsv.gz"
+genes_gtf_path <- "protein_coding_genes.tsv.gz"
 
 loglog_trans <- function(y) {
 	out <- numeric(length(y))
@@ -286,169 +288,159 @@ make_gene_manhattan_category_plot <- function(dt, buffer=100000000,
     return(list(p=p, dt=dt_plot))
 }
 
-# BMRC
-meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/manhattan_plots_null_results_downsampled.tsv.gz") %>% 
-	dplyr::rename(chr=CHR, pos=POS, ref=REF, alt=ALT) %>% 
-	mutate(chr=gsub("chr", "", chr)) %>% 
-	mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype])) %>% 
-	mutate(case_control = ifelse(type == "binary", TRUE, FALSE))
+make_variant_plots <- function(meta_list_tmp, anc, file_suffix,
+                               significance_T = 8e-9) {
 
-# Do the same thing, but split by case-control vs cts (way more power for cts).
-# for (anc in unique(meta_list$ancestry)) {
-for (anc in c("all", "EUR", "just_uk-biobank_and_all-of-us")) {
-	for (cc in FALSE) {
-	# for (cc in c(TRUE, FALSE)) {
-		cat(ifelse(cc, "case control\n", "continuous\n"))
-		meta_list_tmp <- meta_list %>% filter(case_control == cc, ancestry == anc)
-		p <- make_manhattan_plot(meta_list_tmp$chr,
-			meta_list_tmp$pos,
-			-meta_list_tmp$`P-value`,
-			threshold=1000,
-			significance_T = significance_T,
-			label=NULL, 
-			colour_1 = "#6583E6",
-			colour_2 = "#384980",
-			loglog=!cc,
-			log_p_vals=TRUE)
+  p <- make_manhattan_plot(
+    meta_list_tmp$chr,
+    meta_list_tmp$pos,
+    -meta_list_tmp$`P-value`,
+    threshold = 1000,
+    significance_T = significance_T,
+    label = NULL,
+    colour_1 = "#6583E6",
+    colour_2 = "#384980",
+    loglog = TRUE,
+    log_p_vals = TRUE
+  )
 
-		dt_label <- annotate_with_gene_names(meta_list_tmp %>%
-			dplyr::rename(contig = chr, position=pos, pval=`P-value`)) %>% 
-			mutate(y=-pval)
-		if (!cc) {
-			dt_label$y <- loglog_trans(dt_label$y)
-		}
-		dt_label <- data.table(dt_label %>% group_by(ID) %>% 
-			slice_min(pval, with_ties = FALSE) %>% ungroup())
+  dt_label <- annotate_with_gene_names(
+    meta_list_tmp %>%
+      dplyr::rename(contig = chr, position = pos, pval = `P-value`),
+      significance_T = significance_T
+  ) %>%
+    mutate(y = loglog_trans(-pval)) %>%
+    group_by(ID) %>%
+    slice_min(pval, with_ties = FALSE) %>%
+    ungroup() %>%
+    data.table()
 
-		p$dt <- data.table(p$dt)
-		setkeyv(p$dt, c("contig", "position", "y"))
-		setkeyv(dt_label, c("contig", "position", "y"))
-		dt_label <- merge(p$dt, dt_label)
+  p$dt <- data.table(p$dt)
 
-		p$p <- p$p + geom_label_repel(
-			data = dt_label,
-			size = 3, aes(label=external_gene_name),
-			color='grey30', box.padding = 0.2, force = 0.3,
-			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-			min.segment.length=0)
-		width <- 230
-		height <- 100
-		scaling <- 1
-		file <- paste0("meta_analysis", "_",
-			ifelse(cc, "variant_case_control", "variant_cts"))
-		ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
-			height=height*scaling, units='mm')
-		ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
-			height=height*scaling, units='mm')
-		print("done creating!")
+  setkeyv(p$dt, c("contig", "position", "y"))
+  setkeyv(dt_label, c("contig", "position", "y"))
+  dt_label <- merge(p$dt, dt_label)
 
-		width <- 150
-		p <- make_gene_manhattan_category_plot(
-			meta_list_tmp %>% dplyr::rename(
-				position = pos, Pvalue=`P-value`, chromosome_name=chr),
-			buffer=1000000000,
-			scaling=scaling, width=width, height=height, save_figure=FALSE,
-			significance_T=significance_T, loglog=!cc)
+  p$p <- p$p + geom_label_repel(
+    data = dt_label,
+    size = 3,
+    aes(label = external_gene_name),
+    fontface = "italic",
+    color = "grey30",
+    box.padding = 0.2,
+    force = 0.3,
+    label.padding = 0.1,
+    point.padding = 0.1,
+    segment.color = "grey50",
+    min.segment.length = 0
+  )
 
-		# Could consider including genes
-		dt_label <- annotate_with_gene_names(p$dt) %>% 
-			mutate(y=-pval) %>% dplyr::select(-pval)
-		p$dt <- data.table(p$dt)
-		setkeyv(p$dt, intersect(names(p$dt), names(dt_label)))
-		setkeyv(dt_label, intersect(names(p$dt), names(dt_label)))
-		dt_label <- merge(p$dt, dt_label)
+  ggsave(
+    paste0("Figures/", file_suffix, "_", anc, ".pdf"),
+    p$p, width = 230, height = 100, units = "mm"
+  )
+  ggsave(
+    paste0("Figures/", file_suffix, "_", anc, ".png"),
+    p$p, width = 230, height = 100, units = "mm"
+  )
 
-		p$p <- p$p + geom_label_repel(
-			data = dt_label,
-			size = 3, aes(label=external_gene_name),
-			color='grey30', box.padding = 0.2, force = 0.3,
-			label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-			min.segment.length=0)
+  p_cat <- make_gene_manhattan_category_plot(
+    meta_list_tmp %>%
+      dplyr::rename(
+        position = pos,
+        Pvalue = `P-value`,
+        chromosome_name = chr
+      ),
+    buffer = 1000000000,
+    scaling = 1,
+    width = 150,
+    height = 100,
+    save_figure = FALSE,
+    significance_T = significance_T,
+    loglog = TRUE
+  )
 
-		ggsave(
-			filename=paste0("Figures/", file, '_', anc, '_categories.pdf'), p$p,
-			width=width*scaling, height=height*scaling, units='mm')
-		ggsave(
-			filename=paste0("Figures/", file, '_', anc, '_categories.png'), p$p,
-			width=width*scaling, height=height*scaling, units='mm')
-	}
+  dt_label <- annotate_with_gene_names(p_cat$dt,
+  		significance_T=significance_T) %>%
+    group_by(phenotype_category) %>%
+    arrange(pval) %>%
+    slice_head(n = 10) %>%
+    ungroup() %>%
+    mutate(y = -pval) %>%
+    dplyr::select(-pval)
+
+  setDT(dt_label)
+  p_cat$dt <- data.table(p_cat$dt)
+
+  setkeyv(p_cat$dt, intersect(names(p_cat$dt), names(dt_label)))
+  setkeyv(dt_label, intersect(names(p_cat$dt), names(dt_label)))
+  dt_label <- merge(p_cat$dt, dt_label)
+
+  p_cat$p <- p_cat$p + geom_label_repel(
+    data = dt_label,
+    size = 2.5,
+    aes(label = external_gene_name),
+    fontface = "italic",
+    color = "grey30",
+    box.padding = 0.15,
+    force = 1,
+    label.padding = 0.1,
+    point.padding = 0.1,
+    segment.color = "grey50",
+    min.segment.length = 0
+  )
+
+  ggsave(
+    paste0("Figures/", file_suffix, "_", anc, "_categories.pdf"),
+    p_cat$p, width = 150, height = 100, units = "mm"
+  )
+  ggsave(
+    paste0("Figures/", file_suffix, "_", anc, "_categories.png"),
+    p_cat$p, width = 150, height = 100, units = "mm"
+  )
+
+  print(paste("done:", file_suffix, anc))
 }
 
-# meta_list <- meta_list %>% filter(phenotype != "Height")
+# BMRC
+meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/manhattan_plots_null_results_downsampled.tsv.gz") %>% 
+  dplyr::rename(chr=CHR, pos=POS, ref=REF, alt=ALT) %>% 
+  mutate(chr=gsub("chr", "", chr)) %>% 
+  mutate(phenotype_category = unlist(phenotype_broad_categories[phenotype])) %>% 
+  mutate(case_control = ifelse(type == "binary", TRUE, FALSE))
 
-# # Do the same thing, but split by case-control vs cts (way more power for cts).
-# for (anc in unique(meta_list$ancestry)) {
-# 	meta_list_tmp <- meta_list %>% filter(case_control == FALSE, ancestry == anc)
-# 	p <- make_manhattan_plot(meta_list_tmp$chr,
-# 		meta_list_tmp$pos,
-# 		-meta_list_tmp$`P-value`,
-# 		threshold=1000,
-# 		significance_T = significance_T,
-# 		label=NULL, 
-# 		colour_1 = "#6583E6",
-# 		colour_2 = "#384980",
-# 		loglog=TRUE,
-# 		log_p_vals=TRUE)
+for (anc in unique(meta_list$ancestry)) {
+  for (cc in c(TRUE, FALSE)) {
 
-# 	dt_label <- annotate_with_gene_names(meta_list_tmp %>%
-# 		dplyr::rename(contig = chr, position=pos, pval=`P-value`)) %>% 
-# 		mutate(y=-pval)
-# 	dt_label$y <- loglog_trans(dt_label$y)
-# 	dt_label <- data.table(dt_label %>% group_by(ID) %>% 
-# 		slice_min(pval, with_ties = FALSE) %>% ungroup())
+    cat(ifelse(cc, "case control\n", "continuous\n"))
 
-# 	p$dt <- data.table(p$dt)
-# 	setkeyv(p$dt, c("contig", "position", "y"))
-# 	setkeyv(dt_label, c("contig", "position", "y"))
-# 	dt_label <- merge(p$dt, dt_label)
+    meta_list_tmp <- meta_list %>%
+      filter(case_control == cc, ancestry == anc)
 
-# 	p$p <- p$p + geom_label_repel(
-# 		data = dt_label,
-# 		size = 3, aes(label=external_gene_name),
-# 		color='grey30', box.padding = 0.2, force = 0.3,
-# 		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-# 		min.segment.length=0)
-# 	width <- 230
-# 	height <- 100
-# 	scaling <- 1
-# 	file <- paste0("meta_analysis_variant_cts_no_height")
-# 	ggsave(paste0("Figures/", file,  '_', anc, '.pdf'), p$p, width=width*scaling,
-# 		height=height*scaling, units='mm')
-# 	ggsave(paste0("Figures/", file,  '_', anc, '.png'), p$p, width=width*scaling,
-# 		height=height*scaling, units='mm')
-# 	print("done creating!")
+    file_suffix <- paste0(
+      "meta_analysis_",
+      ifelse(cc, "variant_case_control", "variant_cts")
+    )
 
-# 	width <- 150
-# 	p <- make_gene_manhattan_category_plot(
-# 		meta_list_tmp %>% dplyr::rename(
-# 			position = pos, Pvalue=`P-value`, chromosome_name=chr),
-# 		buffer=1000000000,
-# 		scaling=scaling, width=width, height=height, save_figure=FALSE,
-# 		significance_T=significance_T, loglog=TRUE)
+    make_variant_plots(meta_list_tmp, anc, file_suffix, significance_T=significance_T)
+  }
+}
 
-# 	# Could consider including genes
-# 	dt_label <- annotate_with_gene_names(p$dt) %>% 
-# 		mutate(y=-pval) %>% dplyr::select(-pval)
-# 	p$dt <- data.table(p$dt)
-# 	setkeyv(p$dt, intersect(names(p$dt), names(dt_label)))
-# 	setkeyv(dt_label, intersect(names(p$dt), names(dt_label)))
-# 	dt_label <- merge(p$dt, dt_label)
+meta_list_no_height <- meta_list %>%
+  filter(phenotype != "Height", case_control == FALSE)
 
-# 	p$p <- p$p + geom_label_repel(
-# 		data = dt_label,
-# 		size = 3, aes(label=external_gene_name),
-# 		color='grey30', box.padding = 0.2, force = 0.3,
-# 		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-# 		min.segment.length=0)
+for (anc in unique(meta_list_no_height$ancestry)) {
 
-# 	ggsave(
-# 		filename=paste0("Figures/", file, '_', anc, '_categories.pdf'), p$p,
-# 		width=width*scaling, height=height*scaling, units='mm')
-# 	ggsave(
-# 		filename=paste0("Figures/", file, '_', anc, '_categories.png'), p$p,
-# 		width=width*scaling, height=height*scaling, units='mm')
+  meta_list_tmp <- meta_list_no_height %>%
+    filter(ancestry == anc)
 
-# }
+  make_variant_plots(
+    meta_list_tmp,
+    anc,
+    "meta_analysis_variant_cts_no_height",
+    significance_T=significance_T
+  )
+}
 
 # # Plot the results against each other (where possible)
 # # Note that we need to also include the remaining cohorts in the
@@ -656,7 +648,6 @@ for (anc in c("all", "EUR", "just_uk-biobank_and_all-of-us")) {
 # }
 
 meta_list <- fread("/well/lindgren/dpalmer/BRaVa_meta-analysis_outputs/variant/manhattan_plots_up_to_0.01.tsv.gz")
-significance_T <- 8e-9
 
 for (phe in unique(meta_list$phenotype)) {
 	cat(paste0(phe, "..."))
@@ -695,9 +686,10 @@ for (phe in unique(meta_list$phenotype)) {
 	p$p <- p$p + geom_label_repel(
 		data = dt_label,
 		size = 3, aes(label=external_gene_name),
+		fontface = "italic",
 		color='grey30', box.padding = 0.2, force = 1,
 		label.padding = 0.1, point.padding = 0.1, segment.color = 'grey50',
-		min.segment.length=0, segment.size = 0.5, segment.alpha = 0.8,)
+		min.segment.length=0, segment.size = 0.5, segment.alpha = 0.8)
 		width <- 150
 		height <- 80
 		scaling <- 1

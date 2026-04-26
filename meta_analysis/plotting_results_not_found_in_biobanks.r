@@ -27,6 +27,7 @@ dt_agent <- fread(paste0(data_dir, "novelty_agent_results.tsv")) %>%
   rename(external_gene_name = gene, phenotype_full = phenotype) %>% 
   filter(!(external_gene_name %in% c("DNMT3A", "TET2", "ASXL1")))
 
+thres <- 0.05/(20000*3*3*2) 
 
 for (type in c("binary", "continuous")) {
   for (maf in c(0.001, 0.0001)) {

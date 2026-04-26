@@ -114,7 +114,9 @@ make_gene_manhattan_category_plot <- function(dt, buffer=100000000,
 	breaks <- c(2, 4, 6, 8, 10, 20, 50, 100, 200, 300)
 	breaks_trans <- transform_y(breaks)
 
-    p <- ggplot(dt_plot, aes(x=x, y=y_trans, col=phenotype_category)) + geom_point_rast(size=0.5)
+    p <- ggplot(dt_plot, aes(x=x, y=y_trans, col=phenotype_category)) + 
+    	geom_point_rast(size=0.5)
+    	
     if (loglog) {
 	    p <- p + scale_y_continuous(
 	    	breaks = breaks_trans,
@@ -245,7 +247,7 @@ for (i in 1:length(file_root)) {
 		p$dt <- p$dt %>% mutate(y = ifelse(y > 300, 300, y))
 		threshold <- -log10(significance_T1)
 
-		if (any(p$dt$y > tranform_y(threshold))) {
+		if (any(p$dt$y > transform_y(threshold))) {
 			gene_labels_to_plot <- unique(subset(p$dt, y > transform_y(threshold)) %>% group_by(labels) %>% 
 					filter(y == max(y))) %>% ungroup()
 			cat(paste0("number of significant genes: ", nrow(gene_labels_to_plot), "\n"))
