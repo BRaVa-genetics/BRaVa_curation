@@ -2,6 +2,8 @@
 
 This repository contains a collection of scripts and guidelines for curating and running analyses within the BRaVa consortium.
 
+Within the meta-analysis folder, you can find all the scripts to analyse and plot results contained in our manuscript.
+
 # Example WES QC pipeline
 
 A collection of scripts to use as a starting point for running quality control on whole exome sequencing datasets using Hail.
