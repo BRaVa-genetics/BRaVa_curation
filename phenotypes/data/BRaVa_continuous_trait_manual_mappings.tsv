@@ -1,0 +1,15 @@
+phenotype	phenotypeID	UKB_code
+Total cholesterol	TChol	30690
+LDLC	LDLC	30780
+HDLC	HDLC	30760
+Triglycerides	TG	30870
+C-reactive protein (CRP)	CRP	30710
+Creatine kinase (CK)	CK	""
+Alanine transaminase (ALT)	ALT	30620
+Aspartate aminotransferase (AST)	AST	30650
+Coronary artery calcium score	CACS	""
+BMI	BMI	21001
+Height	Height	50
+Alcohol consumption (drinks per week)	AlcCons	1558
+Waist circumference	WC	48
+Hip circumference	HC	49
